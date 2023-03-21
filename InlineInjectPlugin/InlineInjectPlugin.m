@@ -24,6 +24,7 @@ BOOL checkSelfInject(char *name) {
 }
 
 BOOL checkAppVersion(char *checkVersion) {
+    NSLog(@"==== 正在检查App版本.当前版本 %s, 代码中的预设版本为 %s", myAppBundleVersionCode,checkVersion);
     return strcmp(myAppBundleVersionCode, checkVersion) == 0;
 }
 
@@ -45,8 +46,8 @@ static IMP originalFun = NULL;
     void (*updateUIForCustomer)(id, SEL, id, id) = (void *) originalFun;//首先强制转换为函数
     updateUIForCustomer(self, @selector(updateUIForCustomer:licenseValidationResult:), arg1, arg2);//开始函数调用成功
     NSLog(@"======= QiuChenly licenseValidationResult called");
-    NSLog(@"res = %@", arg1);
-    NSLog(@"res = %@", arg2);//用%@打印一切数据对象。顺便还能展示指针的数据类型是什么
+    NSLog(@"==== res = %@", arg1);
+    NSLog(@"==== res = %@", arg2);//用%@打印一切数据对象。顺便还能展示指针的数据类型是什么
     //引入SwiftUI库直接拿到指针所属对象
     NSTextField *(*customerInfoValueLabel)(id, SEL) = (void *) class_getMethodImplementation(NSClassFromString(@"MPAActivationInfoViewController"), NSSelectorFromString(@"customerInfoValueLabel"));
     NSTextField *(*dateInfoValueLabel)(id, SEL) = (void *) class_getMethodImplementation(NSClassFromString(@"MPAActivationInfoViewController"), NSSelectorFromString(@"dateInfoValueLabel"));//声明方法结构和实现体
@@ -278,9 +279,14 @@ int aboutDialogNew(int *ths, int *a2, int *a3) {
 
 void macsfan() {
     if (!checkSelfInject("com.crystalidea.macsfancontrol")) return;
-    intptr_t _0x69d90 = _dyld_get_image_vmaddr_slide(0) + 0x100069D90;
-    rd_route((void *) _0x69d90, _0x69d90a, (void **) &_0x69d90_native);
-
+    if(checkAppVersion("1.5.14")){
+        intptr_t _0x69d90 = _dyld_get_image_vmaddr_slide(0) + 0x100069D90;
+        rd_route((void *) _0x69d90, _0x69d90a, (void **) &_0x69d90_native);
+    }
+    
+    if(checkAppVersion("1.5.15")){
+        hookPtrA(0x100069030, checkSignal);
+    }
 //    intptr_t addr = _dyld_get_image_vmaddr_slide(0) + 0x1000A4750;
 //    rd_route((void *) addr, aboutDialogNew, (void **) &aboutDialogOri);
 }
@@ -357,6 +363,10 @@ Method getMethod(Class _Nullable cls, SEL _Nonnull name) {
     return class_getInstanceMethod(cls, name);
 }
 
+Method getMethodByCls(Class _Nullable cls, SEL _Nonnull name) {
+    return class_getClassMethod(cls, name);
+}
+
 /**
  * 获取函数IMP 字符串方式
  * @param cls ObjectC 类名
@@ -365,6 +375,10 @@ Method getMethod(Class _Nullable cls, SEL _Nonnull name) {
  */
 Method getMethodStr(NSString *cls, NSString *name) {
     return getMethod(NSClassFromString(cls), NSSelectorFromString(name));
+}
+
+Method getMethodStrByCls(NSString *cls, NSString *name) {
+    return getMethodByCls(NSClassFromString(cls), NSSelectorFromString(name));
 }
 
 /**
@@ -387,6 +401,7 @@ void switchMethod(Method original, Method new) {
  * @return 成功或者失败 0/1
  */
 BOOL hookPtr(uint32_t imageIndex, intptr_t addr, void *replaceMethod, void **retOriginalFunctionAddress) {
+    NSLog(@"==== 正在Hook Ptr %p",addr);
     intptr_t originalAddress = _dyld_get_image_vmaddr_slide(imageIndex) + addr;
     return rd_route((void *) originalAddress, replaceMethod, retOriginalFunctionAddress) == KERN_SUCCESS;
 }
@@ -402,16 +417,17 @@ BOOL hookPtrA(intptr_t addr, void *replaceMethod) {
 // Start Bandizip
 
 
-int checkSignal() {
+int checkSignal(void) {
     return 1;
 }
 
-void bandizip() {
+void bandizip(void) {
     if (!checkSelfInject("com.bandisoft.mac.bandizip365")) return;
     //去掉签名检查
     //7.19 0x1000821B0
     //7.20 0x1000876d0
-    hookPtrA(0x1000876d0, checkSignal);
+    if (checkAppVersion("7.2.0")) hookPtrA(0x1000876d0, checkSignal);
+    else if (checkAppVersion("7.21")) hookPtrA(0x100087050, checkSignal);
     //激活
     switchMethod(getMethodStr(@"LicenseManager", @"isSubscriptionEdition"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
 }
@@ -509,13 +525,18 @@ void AppCleaner() {
         __data:00000001007FB9F0                 dq offset __imp__swift_deletedMethodError
         __data:00000001007FB9F8                 dq offset sub_1004041F0
      */
-    if (checkAppVersion("8.1.1")) {
+    if (checkAppVersion("8.1")) {
         hookPtrA(0x100403DC0, checkSignal);
-        //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-        //去掉打开软件弹框提示试用过期
-        switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"onAppDidFinishLaunching"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-
     }
+    if (checkAppVersion("8.1.1")) {
+        hookPtrA(0x100405830, checkSignal);
+    }
+    //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    //去掉打开软件弹框提示试用过期
+    switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"onAppDidFinishLaunching"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+//    switchMethod(getMethodStr(@"_TtC21NKCommonCocoaControls9NKAboutWC", @"setVersionLabel"), getMethod([InlineInjectPlugin class], @selector(activationID)));
+    //    switchMethod(getMethodStr(@"_TtC21NKCommonCocoaControls20LicenseWCLocalizable", @"contactUsButton"), getMethod([InlineInjectPlugin class], @selector(activationID)));
+//    switchMethod(getMethodStr(@"_TtC13App_Cleaner_820LicenseWCLocalizable", @"contactUsButton"), getMethod([InlineInjectPlugin class], @selector(activationID)));
 }
 
 //end AppCleaner
@@ -530,6 +551,24 @@ void FigPlayer() {
     if (!checkSelfInject("com.mac.utility.video.player.PotPlayerX")) return;
     //MAS 版本1.2.2 (2023022001)
     hookPtrA(0x1000765F0, checkSignal);
+}
+
+
+int passcheck(){
+    NSLog(@"==== get check");
+    return 2;
+}
+
+/**
+ * Sublime Text v4147
+ */
+void sublimeText4() {
+    if (!checkSelfInject("com.sublimetext.4")) return;
+    //官方版本4147
+    if(checkAppVersion("Build 4147")) {
+        NSLog(@"==== 4147 loading");
+        hookPtrA(0x10051C86F, checkSignal);
+    }
 }
 
 // Start Omi NTFS 磁盘专家 官网下载 非MAS版本
@@ -596,6 +635,117 @@ void xNTFS() {
 
 // End Omi NTFS 磁盘专家
 
+/**
+ 解优2 AppStore https://apps.apple.com/cn/app/%E8%A7%A3%E4%BC%98-2-%E4%B8%93%E4%B8%9A%E7%9A%84-7z-rar-zip-%E8%A7%A3%E5%8E%8B%E7%BC%A9%E5%B7%A5%E5%85%B7/id1525983573?mt=12
+ */
+void BestZip2(void){
+    if (!checkSelfInject("com.artdesktop.bestzip2")) return;
+    if (!checkAppVersion("1.6.x")){
+        // 兼容以后版本
+        switchMethod(getMethodStr(@"EIAPManager", @"purchased"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    }
+}
+
+/**
+ OmniPlayer AppStore https://apps.apple.com/cn/app/omni-player-%E9%AB%98%E6%B8%85%E5%BD%B1%E9%9F%B3%E6%92%AD%E6%94%BE%E5%99%A8/id1470926410?mt=12
+ */
+void OmniPlayer(void){
+    if (!checkSelfInject("com.mac.utility.media.player")) return;
+    if (checkAppVersion("2.0.18")){
+        hookPtrA(0x1001C1600, checkSignal);
+    }
+}
+
+/**
+ <key>CFBundleIdentifier</key>
+     <string>com.filmage.screen.mac</string>
+     <key>CFBundleInfoDictionaryVersion</key>
+     <string>6.0</string>
+     <key>CFBundleName</key>
+     <string>Filmage Screen</string>
+     <key>CFBundlePackageType</key>
+     <string>APPL</string>
+     <key>CFBundleShortVersionString</key>
+     <string>1.4.7</string>
+ */
+void filmagescreen(void){
+    if (!checkSelfInject("com.filmage.screen.mac")) return;
+    if (!checkAppVersion("1.4.7.x")){
+        switchMethod(getMethodStr(@"IAPWindow", @"didPay"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    }
+}
+
+-(void) validate{
+    NSLog(@"==== validate 函数绕过成功。");
+}
+
+/**
+ * Navicat Premium 16.1.7
+ * MAS版本 https://apps.apple.com/cn/app/navicat-premium-16/id1594061654?mt=12
+ */
+void NavicatPremium(void){
+    if (!checkSelfInject("com.navicat.NavicatPremium")) return;
+    
+    //class_getInstanceMethod 得到类的实例方法
+    //class_getClassMethod 得到类的类方法
+    
+    if (!checkAppVersion("16.1.7.x")){
+        
+        uint32_t size = _dyld_image_count();//获取所有加载的映像
+        NSLog(@"==== 加载的映像数量: %i",size);
+        
+        NSLog(@"==== 函数地址：validate = %p ，函数地址：isProductSubscriptionStillValid = %p",
+              getMethodStrByCls(@"AppStoreReceiptValidation",@"validate"),
+              getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid")
+        );
+        
+        for(int a=0;a<size;a++){
+            const char* name = _dyld_get_image_name(a);//根据映像下标取名称
+            NSLog(@"==== Slide: %i,ModuleName: %s",a,name);
+            
+            if(strcmp("/Applications/Navicat Premium.app/Contents/Frameworks/libcc-premium.dylib", name)==0){
+                NSLog(@"==== find libcc-premium.dylib!");
+                //class_getClassMethod这里不能用Instance 会返回nil 从gpt回复中可以看出类的实例不代表类函数 所以一般应该用getClassMethod就不会报错nil
+                // 下面是ChatGPT的回答
+                /**
+                 可以这样理解：
+
+                 在Objective-C中，方法是通过消息传递来调用的。当我们调用一个方法时，实际上是向对象发送了一个消息，让它去执行对应的方法。因此，我们需要知道方法的名称和参数类型，才能正确地发送消息。
+
+                 在获取方法的时候，我们需要使用Method对象来表示方法。Method对象包含了方法的名称、参数类型、返回值类型等信息，可以用来发送消息。
+
+                 class_getInstanceMethod和class_getClassMethod就是用来获取Method对象的函数。它们的区别在于，class_getInstanceMethod用于获取实例方法，即针对对象的方法；而class_getClassMethod用于获取类方法，即针对类的方法。
+
+                 举个例子，假设我们有一个Person类，它有一个实例方法run和一个类方法eat。如果我们要获取run方法的Method对象，可以使用class_getInstanceMethod(Person.class, @selector(run))；如果要获取eat方法的Method对象，可以使用class_getClassMethod(Person.class, @selector(eat))。
+
+                 需要注意的是，类方法是属于类的，而不是属于类的实例。因此，如果要获取类方法的Method对象，需要使用类对象而不是实例对象。例如，对于类Person，可以使用[Person class]获取它的类对象，然后再使用class_getClassMethod获取类方法的Method对象。
+                 */
+                switchMethod(getMethodStrByCls(@"AppStoreReceiptValidation",@"validate"), getMethod([InlineInjectPlugin class], @selector(validate)));
+                continue;
+            }
+            
+            if(strcmp("/Applications/Navicat Premium.app/Contents/MacOS/Navicat Premium", name)==0){
+                NSLog(@"==== find Navicat Premium!");
+                switchMethod(getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+                continue;
+            }
+        }
+    }
+}
+
+/**
+ * Infuse 7.5.4381
+ * https://apps.apple.com/cn/app/infuse-%E6%99%BA%E8%83%BD%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE%E5%99%A8/id1136220934
+ */
+void infuse(void){
+    if (!checkSelfInject("com.firecore.infuse")) return;
+    if (!checkAppVersion("7.5.4381.x")){
+        NSLog(@"Loading InFuse");
+        switchMethod(getMethodStr(@"FCInAppPurchaseServiceMobile", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    }
+}
+
+
 + (void)load {
     NSBundle *app = [NSBundle mainBundle];
     NSString *appName = [app bundleIdentifier];
@@ -606,7 +756,7 @@ void xNTFS() {
     myAppBundleName = [appName UTF8String];
     myAppBundleVersionCode = [appVersion UTF8String];
 //    myAppBundleName = [appName cStringUsingEncoding:NSASCIIStringEncoding];
-    NSLog(@"==== AppName is %s,Version is %s.", myAppBundleName, myAppBundleVersionCode);
+    NSLog(@"==== AppName is [%s],Version is [%s].", myAppBundleName, myAppBundleVersionCode);
     iShot();
     AutoSwitchInput();
     SuperRightKey();
@@ -622,6 +772,12 @@ void xNTFS() {
     OmiRecorder();
     FigPlayer();
     xNTFS();
+    sublimeText4();
+    BestZip2();
+    OmniPlayer();
+    filmagescreen();
+    NavicatPremium();
+    infuse();
 }
 
 @end
