@@ -10,8 +10,8 @@
 #import <objc/runtime.h>
 #import <mach-o/dyld.h>
 #import <SwiftUI/SwiftUI.h>
-#import <dlfcn.h>
 #import "rd_route.h"
+#import "Utils.h"
 
 @implementation InlineInjectPlugin
 
@@ -77,9 +77,11 @@ void CleanMyMacHook() {
     //中文版4.12.3基址 0x10036BC40
     //国际版4.12.4基址 0x1003B4A00
     //4.12.5 0x1003B4A20
-    //4.13.0b1 0x0x1003B45C0
-    //4.13.0b2 0x0x1003B45C0
-    intptr_t sub_10036BC40 = _dyld_get_image_vmaddr_slide(0) + 0x1003B45C0;//获取第0个镜像基地址 加上偏移地址
+    //4.13.0b1 0x1003B45C0
+    //4.13.0b2 0x1003B45C0
+    //4.13.0 0x1003B7EE0 正式版
+    //4.13.2 (41302.0.2304030900) 0x1003B7EE0 正式版
+    intptr_t sub_10036BC40 = _dyld_get_image_vmaddr_slide(0) + 0x1003B7EE0;//获取第0个镜像基地址 加上偏移地址
     rd_route((void *) sub_10036BC40, sub_10036BC40_hook, (void **) &sub_10036BC40_org);
     NSLog(@"======= QiuChenly load sub_10036BC40 success ======= %p - %p", &sub_10036BC40, &sub_10036BC40_hook);
 
@@ -143,9 +145,9 @@ int sub_100064A0E_hook(int arg1, int arg2, int arg3) {
     [versions setStringValue:[v stringByAppendingString:@" Pro"]];
 }
 
-void iShot() {
+void iShot(void) {
     if (!checkSelfInject("cn.better365.ishot")) return;
-    intptr_t sub_100064A0E = _dyld_get_image_vmaddr_slide(0) + 0x10006598E;//获取第0个镜像基地址 加上偏移地址
+    intptr_t sub_100064A0E = _dyld_get_image_vmaddr_slide(0) + 0x100065A3E;//获取第0个镜像基地址 加上偏移地址
 
     //    intptr_t sub_100050DE3 = _dyld_get_image_vmaddr_slide(0) + 0x100050DE3;//AES密码调用方
     //    id (*aesKey)() = (void *) sub_100050DE3;//直接获取对应地址的函数地址 直接转换成函数结构调用
@@ -285,7 +287,7 @@ void macsfan() {
     }
     
     if(checkAppVersion("1.5.15")){
-        hookPtrA(0x100069030, checkSignal);
+        hookPtrA(0x100069030, bypass1);
     }
 //    intptr_t addr = _dyld_get_image_vmaddr_slide(0) + 0x1000A4750;
 //    rd_route((void *) addr, aboutDialogNew, (void **) &aboutDialogOri);
@@ -337,97 +339,37 @@ void AirBuddy() {
     return @"Ke'd By QiuChenly";
 }
 
-void mwebPro() {
+void mwebPro(void) {
     if (!checkSelfInject("com.coderforart.MWeb3")) return;
-    Method activation = class_getInstanceMethod(NSClassFromString(@"PADProduct"), NSSelectorFromString(@"activated"));
-    Method nActivation = class_getInstanceMethod([InlineInjectPlugin class], @selector(isAppActivated));
-    method_exchangeImplementations(activation, nActivation);
+    switchMethod(getMethodStr(@"PADProduct", @"activated"), getMethod([InlineInjectPlugin class], @selector(isAppActivated)));
+    switchMethod(getMethodStr(@"PADProduct", @"activationEmail"), getMethod([InlineInjectPlugin class], @selector(activationEmail)));
+    switchMethod(getMethodStr(@"PADProduct", @"activationID"), getMethod([InlineInjectPlugin class], @selector(activationID)));
+//    Method activation = class_getInstanceMethod(NSClassFromString(@"PADProduct"), NSSelectorFromString(@"activated"));
+//    Method nActivation = class_getInstanceMethod([InlineInjectPlugin class], @selector(isAppActivated));
+//    method_exchangeImplementations(activation, nActivation);
 
-    Method activationEmail = class_getInstanceMethod(NSClassFromString(@"PADProduct"), NSSelectorFromString(@"activationEmail"));
-    Method nactivationEmail = class_getInstanceMethod([InlineInjectPlugin class], @selector(activationEmail));
-    method_exchangeImplementations(activationEmail, nactivationEmail);
-
-    Method activationID = class_getInstanceMethod(NSClassFromString(@"PADProduct"), NSSelectorFromString(@"activationID"));
-    Method nactivationID = class_getInstanceMethod([InlineInjectPlugin class], @selector(activationID));
-    method_exchangeImplementations(activationID, nactivationID);
+//    Method activationEmail = class_getInstanceMethod(NSClassFromString(@"PADProduct"), NSSelectorFromString(@"activationEmail"));
+//    Method nactivationEmail = class_getInstanceMethod([InlineInjectPlugin class], @selector(activationEmail));
+//    method_exchangeImplementations(activationEmail, nactivationEmail);
+//
+//    Method activationID = class_getInstanceMethod(NSClassFromString(@"PADProduct"), NSSelectorFromString(@"activationID"));
+//    Method nactivationID = class_getInstanceMethod([InlineInjectPlugin class], @selector(activationID));
+//    method_exchangeImplementations(activationID, nactivationID);
 }
 //End MWebPro
 
-/**
- * 获取函数IMP
- * @param cls
- * @param name
- * @return
- */
-Method getMethod(Class _Nullable cls, SEL _Nonnull name) {
-    return class_getInstanceMethod(cls, name);
-}
-
-Method getMethodByCls(Class _Nullable cls, SEL _Nonnull name) {
-    return class_getClassMethod(cls, name);
-}
-
-/**
- * 获取函数IMP 字符串方式
- * @param cls ObjectC 类名
- * @param name ObjectC 函数名
- * @return
- */
-Method getMethodStr(NSString *cls, NSString *name) {
-    return getMethod(NSClassFromString(cls), NSSelectorFromString(name));
-}
-
-Method getMethodStrByCls(NSString *cls, NSString *name) {
-    return getMethodByCls(NSClassFromString(cls), NSSelectorFromString(name));
-}
-
-/**
- * 交换函数IMP实现
- * @param original 原始函数
- * @param new 伪造函数
- */
-void switchMethod(Method original, Method new) {
-    method_exchangeImplementations(original, new);
-}
-
-/**
- * 根据提供的地址hook掉对应位置的函数
- * @param imageIndex App镜像序号
- * @param addr IDA中的函数偏移指针地址
- * @param replaceMethod 将被替换的函数
- * @param retOriginalFunctionAddress 如果有需要 此处返回被hook的原函数实现\n
- * 像这样声明将被保存的原函数:int (*functionName)(char *functionArgs);\n
- * 参数提供:(void **) &functionName
- * @return 成功或者失败 0/1
- */
-BOOL hookPtr(uint32_t imageIndex, intptr_t addr, void *replaceMethod, void **retOriginalFunctionAddress) {
-    NSLog(@"==== 正在Hook Ptr %p",addr);
-    intptr_t originalAddress = _dyld_get_image_vmaddr_slide(imageIndex) + addr;
-    return rd_route((void *) originalAddress, replaceMethod, retOriginalFunctionAddress) == KERN_SUCCESS;
-}
-
-BOOL hookPtrZ(intptr_t addr, void *replaceMethod, void **retOriginalFunctionAddress) {
-    return hookPtr(0, addr, replaceMethod, retOriginalFunctionAddress);
-}
-
-BOOL hookPtrA(intptr_t addr, void *replaceMethod) {
-    return hookPtrZ(addr, replaceMethod, NULL);
-}
-
 // Start Bandizip
 
-
-int checkSignal(void) {
-    return 1;
-}
 
 void bandizip(void) {
     if (!checkSelfInject("com.bandisoft.mac.bandizip365")) return;
     //去掉签名检查
     //7.19 0x1000821B0
     //7.20 0x1000876d0
-    if (checkAppVersion("7.2.0")) hookPtrA(0x1000876d0, checkSignal);
-    else if (checkAppVersion("7.21")) hookPtrA(0x100087050, checkSignal);
+    //7.22 0x10008A800
+    if (checkAppVersion("7.2.0")) hookPtrA(0x1000876d0, bypass1);
+    else if (checkAppVersion("7.21")) hookPtrA(0x100087050, bypass1);
+    else if (checkAppVersion("7.22")) hookPtrA(0x10008A800, bypass1);
     //激活
     switchMethod(getMethodStr(@"LicenseManager", @"isSubscriptionEdition"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
 }
@@ -446,7 +388,7 @@ void bandizip(void) {
 
 void popClip() {
     if (!checkSelfInject("com.pilotmoon.popclip")) return;
-    hookPtrA(0x100083148, checkSignal);
+    hookPtrA(0x100083148, bypass1);
     switchMethod(getMethodStr(@"PMPurchaseInfo", @"licenseSummary"), getMethod([InlineInjectPlugin class], @selector(licenseSummary)));
     switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasLicenseKey"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
 //    switchMethod(getMethodStr(@"PMPurchaseInfo", @"isFullAppUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
@@ -460,8 +402,8 @@ void popClip() {
 //Start Parallels Desktop
 void Parallels() {
     if (!checkSelfInject("com.parallels.desktop.dispatcher")) return;
-    hookPtrA(0x1005b0700, checkSignal);
-    hookPtrA(0x1007c9300, checkSignal);
+    hookPtrA(0x1005b0700, bypass1);
+    hookPtrA(0x1007c9300, bypass1);
 //    switchMethod(getMethodStr(@"PMPurchaseInfo", @"licenseSummary"), getMethod([InlineInjectPlugin class], @selector(licenseSummary)));
 //    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasLicenseKey"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
 //    switchMethod(getMethodStr(@"PMPurchaseInfo", @"isFullAppUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
@@ -526,10 +468,13 @@ void AppCleaner() {
         __data:00000001007FB9F8                 dq offset sub_1004041F0
      */
     if (checkAppVersion("8.1")) {
-        hookPtrA(0x100403DC0, checkSignal);
+        hookPtrA(0x100403DC0, bypass1);
     }
-    if (checkAppVersion("8.1.1")) {
-        hookPtrA(0x100405830, checkSignal);
+    else if (checkAppVersion("8.1.1")) {
+        hookPtrA(0x100405830, bypass1);
+    }
+    else if (checkAppVersion("8.1.2")) {
+        hookPtrA(0x1003FD9F0, bypass1);
     }
     //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
     //去掉打开软件弹框提示试用过期
@@ -544,13 +489,14 @@ void AppCleaner() {
 void OmiRecorder() {
     if (!checkSelfInject("com.mac.utility.screen.recorder")) return;
     //MAS 版本1.2.4 (2023020802)
-    hookPtrA(0x10001C810, checkSignal);
+    hookPtrA(0x10001C810, bypass1);
 }
 
 void FigPlayer() {
     if (!checkSelfInject("com.mac.utility.video.player.PotPlayerX")) return;
     //MAS 版本1.2.2 (2023022001)
-    hookPtrA(0x1000765F0, checkSignal);
+    //MAS 版本1.2.3 (2023032401)
+    hookPtrA(0x1000765F0, bypass1);
 }
 
 
@@ -567,7 +513,7 @@ void sublimeText4() {
     //官方版本4147
     if(checkAppVersion("Build 4147")) {
         NSLog(@"==== 4147 loading");
-        hookPtrA(0x10051C86F, checkSignal);
+        hookPtrA(0x10051C86F, bypass1);
     }
 }
 
@@ -586,7 +532,7 @@ IMP originalFun_boolForKey = NULL;
 void xNTFS() {
     if (checkSelfInject("com.omni.mac.utility.store.ntfs")) {
         //版本1.1.4
-        hookPtrA(0x1000983a0, checkSignal);//AppStore版本
+        hookPtrA(0x1000983a0, bypass1);//AppStore版本
         return;
     }
     if (!checkSelfInject("com.omni.mac.utility.website.ntfs")) return;
@@ -648,11 +594,39 @@ void BestZip2(void){
 
 /**
  OmniPlayer AppStore https://apps.apple.com/cn/app/omni-player-%E9%AB%98%E6%B8%85%E5%BD%B1%E9%9F%B3%E6%92%AD%E6%94%BE%E5%99%A8/id1470926410?mt=12
+ v12 = a1;
+ if ( qword_100888220 != -1 )
+   swift_once(&qword_100888220, sub_1001E5170);
+ v1 = (void *)swift_getInitializedObjCClass(&OBJC_CLASS___NSUserDefaults);
+ v2 = v1;
+ v3 = objc_msgSend(v1, "standardUserDefaults", v12);
+ v4 = (void *)objc_retainAutoreleasedReturnValue(v3);
+ v5 = _sSS10FoundationE19_bridgeToObjectiveCSo8NSStringCyF(
+        -3458764513820540912LL,
+        (unsigned __int64)"sub-border-color" | 0x8000000000000000LL);
+ v6 = (unsigned __int64)objc_msgSend(v4, "boolForKey:", v5);
+ objc_release(v4);
+ objc_release(v5);
+ result = 1;
+ if ( !v6 )
+ {
+   v8 = objc_msgSend(v2, "standardUserDefaults");
+   v9 = (void *)objc_retainAutoreleasedReturnValue(v8);
+   v10 = _sSS10FoundationE19_bridgeToObjectiveCSo8NSStringCyF(
+           -3458764513820540907LL,
+           (unsigned __int64)"isOneTimePaidApp" | 0x8000000000000000LL);
+   v11 = (unsigned __int64)objc_msgSend(v9, "boolForKey:", v10);
+   objc_release(v9);
+   objc_release(v10);
+   result = v11 != 0;
+ }
+ return result;
+}
  */
 void OmniPlayer(void){
     if (!checkSelfInject("com.mac.utility.media.player")) return;
-    if (checkAppVersion("2.0.18")){
-        hookPtrA(0x1001C1600, checkSignal);
+    if (checkAppVersion("2.0.18") || checkAppVersion("2.0.19")){
+        hookPtrA(0x1001C1600, bypass1);
     }
 }
 
@@ -678,6 +652,8 @@ void filmagescreen(void){
 -(void) validate{
     NSLog(@"==== validate 函数绕过成功。");
 }
+
+
 
 /**
  * Navicat Premium 16.1.7
@@ -735,6 +711,7 @@ void NavicatPremium(void){
 
 /**
  * Infuse 7.5.4381
+ * 版本7.5.1 (7.5.4394)
  * https://apps.apple.com/cn/app/infuse-%E6%99%BA%E8%83%BD%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE%E5%99%A8/id1136220934
  */
 void infuse(void){
@@ -742,6 +719,88 @@ void infuse(void){
     if (!checkAppVersion("7.5.4381.x")){
         NSLog(@"Loading InFuse");
         switchMethod(getMethodStr(@"FCInAppPurchaseServiceMobile", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    }
+}
+
+
+bool modifyResult(void){
+    NSLog(@"正在Hook Ptr Paste");
+    return 0x0;
+}
+
+/**
+ * Paste 7.5.4381
+ * https://apps.apple.com/cn/app/paste-clipboard-manager/id967805235
+ */
+void Paste(void){
+    if (!checkSelfInject("com.wiheads.paste")) return;
+    if (checkAppVersion("3.1.9")){
+        NSLog(@"Loading Paste");
+        hookPtrA(0x1001f9f10, modifyResult);
+    }
+}
+
+/**
+ * Office 全家桶 MAS版本破解
+ * 16.71 365订阅
+ * ```
+ * void __cdecl -[DocsUILicensing handleActivationStateChange:](DocsUILicensing *self, SEL a2, id a3){
+       void ***v3; // rax
+       id v4; // rbx
+
+       if ( (unsigned __int8)_objc_msgSend(self, "isActivated", a3) )
+       {
+         v3 = off_20DFFC0;
+       }
+       else if ( (unsigned __int8)_objc_msgSend(self, "canRenew") )
+       {
+         v3 = off_20DFFC8;
+       }
+       else
+       {
+         v3 = &off_20DFFD0;
+       }
+       v4 = objc_retain(*v3);
+       _objc_msgSend(&OBJC_CLASS___DocsUIBridgeNotifications, "sendNotification:object:", v4, self);
+       _objc_release(v4);
+     }
+ * ```
+ */
+void Office(void){
+    if(checkSelfInject("com.microsoft.Excel")){
+        if (checkAppVersion("16.71")){
+            uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
+            uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
+            hookPtr(mso99, 0x5076, bypass1, NULL);
+            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+        }
+    }
+    
+    if(checkSelfInject("com.microsoft.Powerpoint")){
+        if (checkAppVersion("16.71")){
+            uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
+            uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
+            hookPtr(mso99, 0x5076, bypass1, NULL);
+            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+        }
+    }
+    
+    if(checkSelfInject("com.microsoft.Word")){
+        if (checkAppVersion("16.71")){
+            uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
+            uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
+            hookPtr(mso99, 0x5076, bypass1, NULL);
+            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+        }
+    }
+    
+    if(checkSelfInject("com.microsoft.onenote.mac")){
+        if (checkAppVersion("16.71")){
+            int32_t mso30 = getImageVMAddrSlideIndex("mso30");
+            int32_t mso99 = getImageVMAddrSlideIndex("mso99");
+            hookPtr(mso99, 0x5076, bypass1, NULL);
+            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+        }
     }
 }
 
@@ -778,6 +837,8 @@ void infuse(void){
     filmagescreen();
     NavicatPremium();
     infuse();
+    Paste();
+    Office();
 }
 
 @end

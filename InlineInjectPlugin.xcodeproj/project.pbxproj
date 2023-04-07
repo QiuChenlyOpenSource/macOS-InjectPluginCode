@@ -10,14 +10,18 @@
 		3B6E184B297555BB00739C2F /* rd_route.c in Sources */ = {isa = PBXBuildFile; fileRef = 3B6E1849297555BB00739C2F /* rd_route.c */; };
 		3B6E184C297555BB00739C2F /* rd_route.h in Headers */ = {isa = PBXBuildFile; fileRef = 3B6E184A297555BB00739C2F /* rd_route.h */; };
 		E9A26863E5C9D12E5EA56B33 /* InlineInjectPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = E9A26A5B49EF2A475DD7933C /* InlineInjectPlugin.m */; };
+		E9A26A6719E812F86302A584 /* Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = E9A260ED2CA82DE1E51BD051 /* Utils.h */; };
 		E9A26C378FE8803D9FFFBE6A /* InlineInjectPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = E9A269D61B150792D0CEFC79 /* InlineInjectPlugin.h */; };
+		E9A26E4A555D003D358C8080 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = E9A26A08C5ED9FDF0120CD41 /* Utils.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3B6E1849297555BB00739C2F /* rd_route.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rd_route.c; sourceTree = "<group>"; };
 		3B6E184A297555BB00739C2F /* rd_route.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rd_route.h; sourceTree = "<group>"; };
 		E9A260775553257D126EA260 /* libInlineInjectPlugin.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libInlineInjectPlugin.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9A260ED2CA82DE1E51BD051 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		E9A269D61B150792D0CEFC79 /* InlineInjectPlugin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InlineInjectPlugin.h; sourceTree = "<group>"; };
+		E9A26A08C5ED9FDF0120CD41 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
 		E9A26A5B49EF2A475DD7933C /* InlineInjectPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InlineInjectPlugin.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -47,6 +51,8 @@
 				3B6E184A297555BB00739C2F /* rd_route.h */,
 				E9A269D61B150792D0CEFC79 /* InlineInjectPlugin.h */,
 				E9A26A5B49EF2A475DD7933C /* InlineInjectPlugin.m */,
+				E9A260ED2CA82DE1E51BD051 /* Utils.h */,
+				E9A26A08C5ED9FDF0120CD41 /* Utils.m */,
 			);
 			path = InlineInjectPlugin;
 			sourceTree = "<group>";
@@ -68,6 +74,7 @@
 			files = (
 				3B6E184C297555BB00739C2F /* rd_route.h in Headers */,
 				E9A26C378FE8803D9FFFBE6A /* InlineInjectPlugin.h in Headers */,
+				E9A26A6719E812F86302A584 /* Utils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +132,7 @@
 			files = (
 				E9A26863E5C9D12E5EA56B33 /* InlineInjectPlugin.m in Sources */,
 				3B6E184B297555BB00739C2F /* rd_route.c in Sources */,
+				E9A26E4A555D003D358C8080 /* Utils.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
