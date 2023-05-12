@@ -2,12 +2,17 @@
 #import <mach-o/dyld.h>
 #import <AppKit/AppKit.h>
 #import "rd_route.h"
+#import "Utils.h"
+
+
+@implementation Utils
 
 /**
  * 一个返回值为1的空函数
  * @return 1
  */
 int bypass1(void) {
+    NSLog(@"正在Hook返回值为 1");
     return 1;
 }
 
@@ -23,7 +28,9 @@ int bypass1(void) {
  */
 BOOL hookPtr(uint32_t imageIndex, intptr_t addr, void *replaceMethod, void **retOriginalFunctionAddress) {
     NSLog(@"==== 正在Hook Ptr %p", (void *) addr);
-    intptr_t originalAddress = _dyld_get_image_vmaddr_slide(imageIndex) + addr;
+    intptr_t addrA = _dyld_get_image_vmaddr_slide(imageIndex);
+    intptr_t originalAddress = addrA + addr;
+    NSLog(@"==== 模块序号:%i,获取到模块偏移: %p, 最终地址为%p", imageIndex, addrA, originalAddress);
     return rd_route((void *) originalAddress, replaceMethod, retOriginalFunctionAddress) == KERN_SUCCESS;
 }
 
@@ -42,6 +49,26 @@ BOOL hookPtrA(intptr_t addr, void *replaceMethod) {
  */
 void switchMethod(Method original, Method new) {
     method_exchangeImplementations(original, new);
+}
+
+/**
+ * 设置函数的IMP指针并返回原始函数的IMP指针
+ * @param m
+ * @param imp
+ * @return
+ */
+IMP setMethod(Method m, IMP imp) {
+    return method_setImplementation(m, imp);
+}
+
+/**
+ * 获取实例方法函数的IMP指针
+ * @param cls
+ * @param name
+ * @return
+ */
+IMP getMethodImplementation(Class cls, SEL name) {
+    return class_getMethodImplementation(cls, name);
 }
 
 /**
@@ -64,7 +91,12 @@ Method getMethodStr(NSString *cls, NSString *name) {
     return getMethod(NSClassFromString(cls), NSSelectorFromString(name));
 }
 
-
+/**
+ * 获取类方法函数IMP
+ * @param cls
+ * @param name
+ * @return
+ */
 Method getMethodByCls(Class _Nullable cls, SEL _Nonnull name) {
     return class_getClassMethod(cls, name);
 }
@@ -78,14 +110,95 @@ Method getMethodStrByCls(NSString *cls, NSString *name) {
  */
 uint32_t getImageVMAddrSlideIndex(char *ModuleName) {
     int32_t size = _dyld_image_count();
-    for (int i =0; i<size; i++) {
-        const char* Name = _dyld_get_image_name(i);
+    for (uint32_t i = 0; i < size; i++) {
+        const char *Name = _dyld_get_image_name(i);
         NSString *nName = [NSString stringWithCString:Name encoding:NSUTF8StringEncoding];
         NSString *nModuleName = [NSString stringWithCString:ModuleName encoding:NSUTF8StringEncoding];
-        if([nName rangeOfString:nModuleName].location != NSNotFound){
-            NSLog(@"找到模块 %s 序号是 %i",ModuleName,i);
+        if ([nName rangeOfString:nModuleName].location != NSNotFound) {
+            NSLog(@"==== 找到模块 %s 序号是 %i", ModuleName, i);
             return i;
         }
     }
     return 0;
 }
+
+/**
+ * App的唯一ID 用来过滤指定的App
+ */
+const char *myAppBundleName = "";
+/**
+ * app的版本号
+ */
+const char *myAppBundleVersionCode = "";
+/**
+ * 更精确的版本号 一般情况下不用到
+ */
+const char *myAppCFBundleVersion = "";
+
+
+/**
+ * 检查这个app包名是否和提供的name一致
+ * @param name
+ * @return
+ */
+BOOL checkSelfInject(char *name) {
+    BOOL result = strcmp(myAppBundleName, name) == 0;
+    NSString *info = result ? @"需要注入" : @"不需要注入";//%s似乎对字符串打印有错误的缓冲显示 需要用NSString做中转
+    NSLog(@"==== 当前App是 %s 输入的App名称是 %s, 是否需要注入? %@.", myAppBundleName, name, info);
+    return result;//相等则执行
+}
+
+/**
+ * 检查app版本号是否和提供的版本号一致
+ * @param checkVersion
+ * @return
+ */
+BOOL checkAppVersion(char *checkVersion) {
+    NSLog(@"==== 正在检查App版本.当前版本 %s, 代码中的预设版本为 %s", myAppBundleVersionCode, checkVersion);
+    return strcmp(myAppBundleVersionCode, checkVersion) == 0;
+}
+
+/**
+ * 检查app更精确的版本号
+ * @param checkVersion
+ * @return
+ */
+BOOL checkAppCFBundleVersion(char *checkVersion) {
+    NSLog(@"==== 正在检查App版本.当前版本 %s, 代码中的预设版本为 %s", myAppCFBundleVersion, checkVersion);
+    return strcmp(myAppCFBundleVersion, checkVersion) == 0;
+}
+
+/**
+ * 初始化基本代码和环境
+ */
+void initBaseEnv() {
+    NSBundle *app = [NSBundle mainBundle];
+    NSString *appName = [app bundleIdentifier];
+    NSString *appVersion = [app objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSString *appCFBundleVersion = [app objectForInfoDictionaryKey:@"CFBundleVersion"];
+//    const char *app = appName.UTF8String;
+//    myAppBundleName = malloc(strlen(app));
+//    memcpy(myAppBundleName, app, strlen(app));
+    myAppBundleName = [appName UTF8String];
+    myAppBundleVersionCode = [appVersion UTF8String];
+    myAppCFBundleVersion = [appCFBundleVersion UTF8String];
+//    myAppBundleName = [appName cStringUsingEncoding:NSASCIIStringEncoding];
+    NSLog(@"==== AppName is [%s],Version is [%s], myAppCFBundleVersion is [%s].", myAppBundleName, myAppBundleVersionCode, myAppCFBundleVersion);
+}
+
+/**
+ * Swift方式的bypass1函数实现
+ * @return 返回1
+ */
+- (BOOL)isAppActivated {
+    return 0x1;
+}
+
+/**
+ * 自动加载主函数
+ */
++ (void)load {
+    initBaseEnv();
+}
+
+@end

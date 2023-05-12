@@ -7,7 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "Utils.h"
 
-@interface InlineInjectPlugin : NSObject
+@interface InlineInjectPlugin : Utils
 
 @end

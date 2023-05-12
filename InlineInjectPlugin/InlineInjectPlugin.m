@@ -7,34 +7,8 @@
 //
 
 #import "InlineInjectPlugin.h"
-#import <objc/runtime.h>
-#import <mach-o/dyld.h>
-#import <SwiftUI/SwiftUI.h>
-#import "rd_route.h"
-#import "Utils.h"
 
 @implementation InlineInjectPlugin
-
-const char *myAppBundleName = "";
-const char *myAppBundleVersionCode = "";
-
-BOOL checkSelfInject(char *name) {
-    NSLog(@"==== app is %s input is %s result is %i", myAppBundleName, name, strcmp(myAppBundleName, name) == 0);
-    return strcmp(myAppBundleName, name) == 0;//相等则执行
-}
-
-BOOL checkAppVersion(char *checkVersion) {
-    NSLog(@"==== 正在检查App版本.当前版本 %s, 代码中的预设版本为 %s", myAppBundleVersionCode,checkVersion);
-    return strcmp(myAppBundleVersionCode, checkVersion) == 0;
-}
-
-- (BOOL)isAppActivated {
-    return 0x1;
-}
-
-- (BOOL)hasLoggedInUser {
-    return 0x1;
-}
 
 static IMP originalFun = NULL;
 //声明类内部变量
@@ -49,24 +23,22 @@ static IMP originalFun = NULL;
     NSLog(@"==== res = %@", arg1);
     NSLog(@"==== res = %@", arg2);//用%@打印一切数据对象。顺便还能展示指针的数据类型是什么
     //引入SwiftUI库直接拿到指针所属对象
-    NSTextField *(*customerInfoValueLabel)(id, SEL) = (void *) class_getMethodImplementation(NSClassFromString(@"MPAActivationInfoViewController"), NSSelectorFromString(@"customerInfoValueLabel"));
-    NSTextField *(*dateInfoValueLabel)(id, SEL) = (void *) class_getMethodImplementation(NSClassFromString(@"MPAActivationInfoViewController"), NSSelectorFromString(@"dateInfoValueLabel"));//声明方法结构和实现体
+    NSTextField *(*customerInfoValueLabel)(id, SEL) = (void *) getMethodImplementation(NSClassFromString(@"MPAActivationInfoViewController"), NSSelectorFromString(@"customerInfoValueLabel"));
+    NSTextField *(*dateInfoValueLabel)(id, SEL) = (void *) getMethodImplementation(NSClassFromString(@"MPAActivationInfoViewController"), NSSelectorFromString(@"dateInfoValueLabel"));//声明方法结构和实现体
     NSTextField *customerInfoValueLabels = customerInfoValueLabel(self, NSSelectorFromString(@"customerInfoValueLabel"));
     NSTextField *dateInfoValueLabels = dateInfoValueLabel(self, NSSelectorFromString(@"dateInfoValueLabel"));//传入self和SEL调用函数
     NSLog(@"NSTextField = %@", customerInfoValueLabels);
     [customerInfoValueLabels setStringValue:@"K'ed by 秋城落叶@52pojie.cn/home.php?uid=653608"];//直接调用函数方法设置字符串
     [dateInfoValueLabels setStringValue:@"永不过期 仅供交流学习 禁止传播/牟利"];
-
-//    [customerInfoValueLabels setStringValue:@"K'ed By 秋城落叶 MacApp.org.cn全网首发"];//直接调用函数方法设置字符串
-//    [dateInfoValueLabels setStringValue:@"永不过期 仅供学习交流 禁止牟利/转载"];
 }
 
-BOOL (*sub_10036BC40_org)(int) = NULL;
+BOOL (*sub_10036BC40_org)(intptr_t) = NULL;
 
 //定义一个swift函数用于替换 可选是否static静态
-static BOOL sub_10036BC40_hook(int a1) {
-    BOOL ret = sub_10036BC40_org(0);//调用原函数 但是不知道为什么参数传递进去就闪退 内存指向了一个不可读区域
-    NSLog(@"======= QiuChenly load sub_10036BC40_hook called original return value is %d, args1 = %d", ret, a1);
+static BOOL sub_10036BC40_hook(intptr_t a1) {
+    BOOL ret = sub_10036BC40_org(a1);//调用原函数 但是不知道为什么参数传递进去就闪退 内存指向了一个不可读区域
+    // Update at : 2023.5.12 闪退的原因是地址指针被格式化为了int 参数类型需要指定为intptr_t表示这是一个内存地址 然后传递给原始函数即可
+    NSLog(@"======= QiuChenly load sub_10036BC40_hook called original return value is %d, args1 = %p", ret, &a1);
     return 0x1;
 }
 
@@ -81,20 +53,27 @@ void CleanMyMacHook() {
     //4.13.0b2 0x1003B45C0
     //4.13.0 0x1003B7EE0 正式版
     //4.13.2 (41302.0.2304030900) 0x1003B7EE0 正式版
-    intptr_t sub_10036BC40 = _dyld_get_image_vmaddr_slide(0) + 0x1003B7EE0;//获取第0个镜像基地址 加上偏移地址
-    rd_route((void *) sub_10036BC40, sub_10036BC40_hook, (void **) &sub_10036BC40_org);
-    NSLog(@"======= QiuChenly load sub_10036BC40 success ======= %p - %p", &sub_10036BC40, &sub_10036BC40_hook);
+
+    intptr_t ptr;
+
+    if (checkAppVersion("4.13.3") || checkAppVersion("4.13.4"))
+        ptr = 0x1003a76e0;
+    else
+        ptr = 0x1003a76e0;
+
+    hookPtrZ(ptr, sub_10036BC40_hook, (void **) &sub_10036BC40_org);
+//    intptr_t sub_10036BC40 = _dyld_get_image_vmaddr_slide(0) + ptr;//获取第0个镜像基地址 加上偏移地址
+//    rd_route((void *) sub_10036BC40, sub_10036BC40_hook, (void **) &sub_10036BC40_org);
+    NSLog(@"==== QiuChenly load sub_10036BC40 即将被替换的函数地址 %p - 替换的内存地址: %p", (void *) ptr, sub_10036BC40_hook);
 
 //    NSLog(@"======= QiuChenly load hasLoggedInUser =======");
 //    Method ohasLoggedInUser = class_getInstanceMethod(NSClassFromString(@"CMMacPawAccountActivationManager"), NSSelectorFromString(@"hasLoggedInUser"));
 //    Method nhasLoggedInUser = class_getInstanceMethod([InlineInjectPlugin class], @selector(hasLoggedInUser));
 //    method_exchangeImplementations(ohasLoggedInUser, nhasLoggedInUser);//常规交换函数实现
-
-    NSLog(@"======= QiuChenly load MPAActivationInfoViewController =======");
-    Method oMPAActivationInfoViewController = class_getInstanceMethod(NSClassFromString(@"MPAActivationInfoViewController"), NSSelectorFromString(@"updateUIForCustomer:licenseValidationResult:"));
-    IMP nMPAActivationInfoViewController = class_getMethodImplementation([InlineInjectPlugin class], @selector(updateUIForCustomer:licenseValidationResult:));
+    Method oMPAActivationInfoViewController = getMethodStr(@"MPAActivationInfoViewController", @"updateUIForCustomer:licenseValidationResult:");
+    IMP nMPAActivationInfoViewController = getMethodImplementation([InlineInjectPlugin class], @selector(updateUIForCustomer:licenseValidationResult:));
     //IMP函数实现和Selector的极限拉扯
-    originalFun = method_setImplementation(oMPAActivationInfoViewController, nMPAActivationInfoViewController);//设置新的IMP实现到系统中
+    originalFun = setMethod(oMPAActivationInfoViewController, nMPAActivationInfoViewController);//设置新的IMP实现到系统中
 }
 
 
@@ -325,8 +304,6 @@ void AirBuddy() {
     intptr_t _0x100050480 = _dyld_get_image_vmaddr_slide(0) + 0x100050480;
     rd_route((void *) _0x100050480, _0x100050480New, (void **) &_0x100050480Ori);
 }
-
-
 //end of AirBuddy2
 
 //Start MWebPro
@@ -475,6 +452,9 @@ void AppCleaner() {
     }
     else if (checkAppVersion("8.1.2")) {
         hookPtrA(0x1003FD9F0, bypass1);
+    }
+    else if (checkAppVersion("8.1.3")) {
+        hookPtrA(0x100415D90, bypass1);
     }
     //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
     //去掉打开软件弹框提示试用过期
@@ -716,8 +696,11 @@ void NavicatPremium(void){
  */
 void infuse(void){
     if (!checkSelfInject("com.firecore.infuse")) return;
-    if (!checkAppVersion("7.5.4381.x")){
-        NSLog(@"Loading InFuse");
+    if (checkAppCFBundleVersion("7.5.4410")){
+        NSLog(@"Loading InFuse 4410");
+        switchMethod(getMethodStr(@"FCInAppPurchaseServiceFreemium", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    } else if (checkAppCFBundleVersion("7.5.4381")){
+        NSLog(@"Loading InFuse 4381");
         switchMethod(getMethodStr(@"FCInAppPurchaseServiceMobile", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
     }
 }
@@ -729,7 +712,7 @@ bool modifyResult(void){
 }
 
 /**
- * Paste 7.5.4381
+ * Paste 3.1.9
  * https://apps.apple.com/cn/app/paste-clipboard-manager/id967805235
  */
 void Paste(void){
@@ -767,55 +750,162 @@ void Paste(void){
  * ```
  */
 void Office(void){
-    if(checkSelfInject("com.microsoft.Excel")){
+    if(checkSelfInject("com.microsoft.Excel") || checkSelfInject("com.microsoft.Powerpoint") || checkSelfInject("com.microsoft.Word")){
+        uint32_t mso99_addr;
+        uint32_t mso30_addr;
+
+        uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
+        uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
         if (checkAppVersion("16.71")){
-            uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
-            uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
-            hookPtr(mso99, 0x5076, bypass1, NULL);
-            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+            mso99_addr = 0x5076;
+            mso30_addr = 0x81b0f;
+        } else if (checkAppVersion("16.72")){
+            mso30_addr = 0x7e82f;
+            mso99_addr = 0x6666;
+        } else {
+            NSLog(@"版本不对，取消注入。");
+            return;
+        }
+        hookPtr(mso99, mso99_addr, bypass1, NULL);
+        hookPtr(mso30, mso30_addr, bypass1, NULL);
+    }
+}
+
+void AdobeApps(void){
+    if (checkSelfInject("com.adobe.Photoshop")) {
+        //Adobe Photoshop 2023
+        if (checkAppVersion("24.2.0")){
+            NSLog(@"Loading AdobeApps 24.2.0");
+            hookPtrA(0x10412069E, bypass1);
+        }
+        if (checkAppVersion("24.4.1")){
+            NSLog(@"Loading AdobeApps 24.4.1");
+            // %s: Initial profile failure: not licensed from cache (profile status %d) 搜索这个直接定位到目标函数
+            // (*(void (__fastcall **)(__int64, const char *, const char *, _QWORD))(*(_QWORD *)v114 + 32LL))(
+            //          v114,
+            //          "%s: Initial profile failure: licensed from cache (profile status %d)",
+            //          "ProcessV2Profile",
+            //          *v101);
+
+            // __int64 __fastcall adobe::nglcontroller::NglController::ProcessV2Profile(__int64 a1, __int64 a2, __int64 a3, __int64 a4)
+
+            // https://ims-prod06.adobelogin.com/ims/token/v4
+            hookPtrA(0x1041BA110, bypass1);//这个函数是实际检查用户权限函数 nop掉就不提示窗口
+//        hookPtrA(0x10424E59C, bypass1);//这个函数是检查账户权限线程
         }
     }
-    
-    if(checkSelfInject("com.microsoft.Powerpoint")){
-        if (checkAppVersion("16.71")){
-            uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
-            uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
-            hookPtr(mso99, 0x5076, bypass1, NULL);
-            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+
+
+    if (checkSelfInject("com.adobe.LightroomClassicCC7")) {
+        //Adobe Lightroom Classic
+        if (checkAppVersion("12.3")){
+            NSLog(@"Loading LightroomClassicCC7 12.3");
+//            hookPtrA(0x1001AE6C7, bypass1);
+            hookPtrA(0x100027638, bypass1);
         }
     }
-    
-    if(checkSelfInject("com.microsoft.Word")){
-        if (checkAppVersion("16.71")){
-            uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
-            uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
-            hookPtr(mso99, 0x5076, bypass1, NULL);
-            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+
+    if (checkSelfInject("com.adobe.Adobe-Animate-2023.application")) {
+        //Adobe Animate 2023
+        if (checkAppVersion("23.0.1")){
+            NSLog(@"Loading Adobe Animate 2023 23.0.1");
+            hookPtrA(0x100019F10, bypass1);
         }
     }
-    
-    if(checkSelfInject("com.microsoft.onenote.mac")){
-        if (checkAppVersion("16.71")){
-            int32_t mso30 = getImageVMAddrSlideIndex("mso30");
-            int32_t mso99 = getImageVMAddrSlideIndex("mso99");
-            hookPtr(mso99, 0x5076, bypass1, NULL);
-            hookPtr(mso30, 0x81b0f, bypass1, NULL);
+
+    if (checkSelfInject("com.adobe.xd")) {
+        //sudo insert_dylib /Users/qiuchenly/Library/Caches/JetBrains/AppCode2023.1/DerivedData/InlineInjectPlugin-eklzvojrwuuobhdysecelanfrlvy/Build/Products/Debug/libInlineInjectPlugin.dylib /Applications/Adobe\ XD/Adobe\ XD.app/Contents/Frameworks/nanopb.framework/Versions/A/nanopb_副本 /Applications/Adobe\ XD/Adobe\ XD.app/Contents/Frameworks/nanopb.framework/Versions/A/nanopb
+        //Adobe XD
+        if (checkAppVersion("56.1.12.1")){
+            NSLog(@"Loading Adobe XD 56.1.12.1");
+            hookPtrA(0x100B78FC4, bypass1);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.Audition")) {
+        //Adobe Audition 2023
+        if (checkAppVersion("23.3")){
+            NSLog(@"==== Loading Adobe Audition 2023 23.3");
+            uint32_t AuUI = getImageVMAddrSlideIndex("AuUI.framework/Versions/A/AuUI");
+            hookPtr(AuUI, 0xD06D40, bypass1, NULL);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.illustrator")) {
+        //Adobe Illustrator
+        if (checkAppVersion("27.5.0")){
+            NSLog(@"Loading com.adobe.illustrator 27.5.0");
+            hookPtrA(0x100BF9F84, bypass1);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.dreamweaver-18.1")) {
+        //Adobe Illustrator
+        if (checkAppVersion("21.3.0.15593")){
+            NSLog(@"Loading com.adobe.dreamweaver-18.1 21.3.0.15593");
+            hookPtrA(0x1018927C0, bypass1);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.AfterEffects")) {
+        //After Effects 2023
+        uint32_t AfterFXLib = getImageVMAddrSlideIndex("AfterFXLib");
+        if (checkAppVersion("23.3")){
+            NSLog(@"Loading com.adobe.AfterEffects 23.3");
+            hookPtr(AfterFXLib, 0x11C52C0, bypass1, NULL);
+        } else if (checkAppVersion("23.4")){
+            NSLog(@"Loading com.adobe.AfterEffects 23.4");
+            hookPtr(AfterFXLib, 0x11e99a0, bypass1, NULL);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.ame.application.23")) {
+        //Adobe Media Encoder 2023
+        if (checkAppVersion("23.3")){
+            NSLog(@"Loading Adobe Media Encoder 2023 23.3");
+            hookPtrA(0x1000E3180, bypass1);
+        } else if (checkAppVersion("23.4")){
+            NSLog(@"Loading Adobe Media Encoder 2023 23.4");
+            hookPtrA(0x1000eaed0, bypass1);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.PremierePro.23")) {
+        //Adobe Premiere Pro 2023
+        uint32_t AfterFXLib = getImageVMAddrSlideIndex("Frontend");
+        uint32_t Registration = getImageVMAddrSlideIndex("Registration");
+        if (checkAppVersion("23.3")){
+            NSLog(@"Loading com.adobe.PremierePro 23.3");
+//            hookPtr(AfterFXLib, 0x2095C0, bypass1, NULL);
+            hookPtr(Registration, 0x4D3A0, bypass1, NULL);
+        } else if (checkAppVersion("23.4")){
+            NSLog(@"Loading com.adobe.PremierePro 23.4");
+            hookPtr(Registration, 0x5c950, bypass1, NULL);
+        }
+    }
+
+
+    if (checkSelfInject("com.adobe.Acrobat.Pro")) {
+        //Acrobat
+        if (checkAppVersion("23.001.20143")){
+            NSLog(@"Loading Acrobat 23.001.20143");
+            uint32_t Acrobat = getImageVMAddrSlideIndex("Acrobat.framework/Versions/A/Acrobat");
+            hookPtr(Acrobat, 0x16EE830, bypass1, NULL);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.distiller")) {
+        //Acrobat Distiller
+        if (checkAppVersion("23.001.20143")){
+            NSLog(@"Loading Acrobat Distiller 23.001.20143");
+            uint32_t Acrobat = getImageVMAddrSlideIndex("DistillerLib.framework/Versions/A/DistillerLib");
+            hookPtr(Acrobat, 0x1F70F0, bypass1, NULL);
         }
     }
 }
 
 
 + (void)load {
-    NSBundle *app = [NSBundle mainBundle];
-    NSString *appName = [app bundleIdentifier];
-    NSString *appVersion = [app objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-//    const char *app = appName.UTF8String;
-//    myAppBundleName = malloc(strlen(app));
-//    memcpy(myAppBundleName, app, strlen(app));
-    myAppBundleName = [appName UTF8String];
-    myAppBundleVersionCode = [appVersion UTF8String];
-//    myAppBundleName = [appName cStringUsingEncoding:NSASCIIStringEncoding];
-    NSLog(@"==== AppName is [%s],Version is [%s].", myAppBundleName, myAppBundleVersionCode);
     iShot();
     AutoSwitchInput();
     SuperRightKey();
@@ -837,9 +927,9 @@ void Office(void){
     filmagescreen();
     NavicatPremium();
     infuse();
-    Paste();
+//    Paste(); //无法使用
     Office();
+    AdobeApps();
 }
 
 @end
-//sudo /Users/qiuchenly/Downloads/macOS_HookWorkSpace/insert_dylib /Users/qiuchenly/Library/Caches/JetBrains/AppCode2022.3/DerivedData/InlineInjectPlugin-cybkmcvijgblnpbnqwzdzdznmxep/Build/Products/Debug/libInlineInjectPlugin.dylib
