@@ -462,7 +462,7 @@ void AppCleaner() {
         hookPtrA(0x100415D90, bypass1);
     }
     else if (checkAppVersion("8.1.4")) {
-//        hookPtrA(0x100415FF0, bypass1);
+        hookPtrA(0x100415FF0, bypass1);
     }
     //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
     //去掉打开软件弹框提示试用过期
