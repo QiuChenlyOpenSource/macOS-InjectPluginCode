@@ -264,7 +264,7 @@ void macsfan() {
         intptr_t _0x69d90 = _dyld_get_image_vmaddr_slide(0) + 0x100069D90;
         rd_route((void *) _0x69d90, _0x69d90a, (void **) &_0x69d90_native);
     }
-    
+
     if(checkAppVersion("1.5.15")){
         hookPtrA(0x100069030, bypass1);
     }
@@ -429,20 +429,25 @@ void AppCleaner() {
 
     /**
      * 此处Hook地址来自
-     *  __data:00000001007FB990                 dq offset sub_100403D80
-        __data:00000001007FB998                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9A0                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9A8                 dq offset sub_100403DC0 <-- 修改此函数为返回1
-        __data:00000001007FB9B0                 dq offset sub_100403DF0
-        __data:00000001007FB9B8                 dq offset sub_100404140
-        __data:00000001007FB9C0                 dq offset sub_1004041C0
-        __data:00000001007FB9C8                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9D0                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9D8                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9E0                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9E8                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9F0                 dq offset __imp__swift_deletedMethodError
-        __data:00000001007FB9F8                 dq offset sub_1004041F0
+     *  char __cdecl -[_TtC13App_Cleaner_822BaseFeaturesController isUnlocked](
+            _TtC13App_Cleaner_822BaseFeaturesController *self,
+            SEL a2
+        )
+    {
+      __int64 v2; // r13
+      __int64 (__fastcall *v3)(_TtC13App_Cleaner_822BaseFeaturesController *, SEL); // r15
+      id v4; // r14
+      char v5; // bl
+
+      v2 = (*(&self->super.isa + OBJC_IVAR____TtC13App_Cleaner_822BaseFeaturesController_licenseManager))[5];
+      v3 = *(*v2 + 200LL);  <----- 此处调用的函数返回 1 即可通过校验
+      swift_retain(v2);
+      v4 = objc_retain(self);
+      v5 = v3(self, a2);
+      objc_release(v4);
+      swift_release(v2);
+      return (v5 - 1) < 3u;
+    }
      */
     if (checkAppVersion("8.1")) {
         hookPtrA(0x100403DC0, bypass1);
@@ -455,6 +460,9 @@ void AppCleaner() {
     }
     else if (checkAppVersion("8.1.3")) {
         hookPtrA(0x100415D90, bypass1);
+    }
+    else if (checkAppVersion("8.1.4")) {
+//        hookPtrA(0x100415FF0, bypass1);
     }
     //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
     //去掉打开软件弹框提示试用过期
@@ -476,7 +484,12 @@ void FigPlayer() {
     if (!checkSelfInject("com.mac.utility.video.player.PotPlayerX")) return;
     //MAS 版本1.2.2 (2023022001)
     //MAS 版本1.2.3 (2023032401)
-    hookPtrA(0x1000765F0, bypass1);
+    //    1.3.0 (2023051702)
+    if (checkAppVersion("1.2.2") || checkAppVersion("1.2.3")) {
+        hookPtrA(0x1000765F0, bypass1);
+    } else if (checkAppVersion("1.3.0")) {
+        hookPtrA(0x100076090, bypass1);
+    }
 }
 
 
@@ -607,6 +620,8 @@ void OmniPlayer(void){
     if (!checkSelfInject("com.mac.utility.media.player")) return;
     if (checkAppVersion("2.0.18") || checkAppVersion("2.0.19")){
         hookPtrA(0x1001C1600, bypass1);
+    } else if (checkAppVersion("2.1.0")){
+        hookPtrA(0x1001C4080, bypass1);
     }
 }
 
@@ -641,24 +656,24 @@ void filmagescreen(void){
  */
 void NavicatPremium(void){
     if (!checkSelfInject("com.navicat.NavicatPremium")) return;
-    
+
     //class_getInstanceMethod 得到类的实例方法
     //class_getClassMethod 得到类的类方法
-    
+
     if (!checkAppVersion("16.1.7.x")){
-        
+
         uint32_t size = _dyld_image_count();//获取所有加载的映像
         NSLog(@"==== 加载的映像数量: %i",size);
-        
+
         NSLog(@"==== 函数地址：validate = %p ，函数地址：isProductSubscriptionStillValid = %p",
               getMethodStrByCls(@"AppStoreReceiptValidation",@"validate"),
               getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid")
         );
-        
+
         for(int a=0;a<size;a++){
             const char* name = _dyld_get_image_name(a);//根据映像下标取名称
             NSLog(@"==== Slide: %i,ModuleName: %s",a,name);
-            
+
             if(strcmp("/Applications/Navicat Premium.app/Contents/Frameworks/libcc-premium.dylib", name)==0){
                 NSLog(@"==== find libcc-premium.dylib!");
                 //class_getClassMethod这里不能用Instance 会返回nil 从gpt回复中可以看出类的实例不代表类函数 所以一般应该用getClassMethod就不会报错nil
@@ -679,7 +694,7 @@ void NavicatPremium(void){
                 switchMethod(getMethodStrByCls(@"AppStoreReceiptValidation",@"validate"), getMethod([InlineInjectPlugin class], @selector(validate)));
                 continue;
             }
-            
+
             if(strcmp("/Applications/Navicat Premium.app/Contents/MacOS/Navicat Premium", name)==0){
                 NSLog(@"==== find Navicat Premium!");
                 switchMethod(getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
@@ -696,7 +711,7 @@ void NavicatPremium(void){
  */
 void infuse(void){
     if (!checkSelfInject("com.firecore.infuse")) return;
-    if (checkAppCFBundleVersion("7.5.4410")){
+    if (checkAppCFBundleVersion("7.5.4410") || checkAppCFBundleVersion("7.5.4425")){
         NSLog(@"Loading InFuse 4410");
         switchMethod(getMethodStr(@"FCInAppPurchaseServiceFreemium", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
     } else if (checkAppCFBundleVersion("7.5.4381")){
@@ -762,6 +777,9 @@ void Office(void){
         } else if (checkAppVersion("16.72")){
             mso30_addr = 0x7e82f;
             mso99_addr = 0x6666;
+        } else if (checkAppVersion("16.73")){
+            mso30_addr = 0x8167f; //Mso::Licensing::Category::IsSubscription
+            mso99_addr = 0x5356; //-[DocsUILicensing isActivated]: 找 call       qword [rcx+8]
         } else {
             NSLog(@"版本不对，取消注入。");
             return;
