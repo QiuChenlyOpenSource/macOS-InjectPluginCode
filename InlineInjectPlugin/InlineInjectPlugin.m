@@ -816,7 +816,6 @@ void AdobeApps(void){
         }
     }
 
-
     if (checkSelfInject("com.adobe.LightroomClassicCC7")) {
         //Adobe Lightroom Classic
         if (checkAppVersion("12.3")){
