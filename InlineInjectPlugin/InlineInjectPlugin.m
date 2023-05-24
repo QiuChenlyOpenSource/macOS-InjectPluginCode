@@ -796,7 +796,7 @@ void AdobeApps(void){
             NSLog(@"Loading AdobeApps 24.2.0");
             hookPtrA(0x10412069E, bypass1);
         }
-        if (checkAppVersion("24.4.1")){
+        else if (checkAppVersion("24.4.1")){
             NSLog(@"Loading AdobeApps 24.4.1");
             // %s: Initial profile failure: not licensed from cache (profile status %d) 搜索这个直接定位到目标函数
             // (*(void (__fastcall **)(__int64, const char *, const char *, _QWORD))(*(_QWORD *)v114 + 32LL))(
@@ -810,6 +810,9 @@ void AdobeApps(void){
             // https://ims-prod06.adobelogin.com/ims/token/v4
             hookPtrA(0x1041BA110, bypass1);//这个函数是实际检查用户权限函数 nop掉就不提示窗口
 //        hookPtrA(0x10424E59C, bypass1);//这个函数是检查账户权限线程
+        } else if (checkAppVersion("24.5.0")){
+            NSLog(@"Loading AdobeApps 24.5.0");
+            hookPtrA(0x10420BE40, bypass1);
         }
     }
 
@@ -902,11 +905,14 @@ void AdobeApps(void){
         }
     }
 
-
     if (checkSelfInject("com.adobe.Acrobat.Pro")) {
         //Acrobat
         if (checkAppVersion("23.001.20143")){
             NSLog(@"Loading Acrobat 23.001.20143");
+            uint32_t Acrobat = getImageVMAddrSlideIndex("Acrobat.framework/Versions/A/Acrobat");
+            hookPtr(Acrobat, 0x16EE830, bypass1, NULL);
+        } else if (checkAppVersion("23.001.20177")){
+            NSLog(@"Loading Acrobat 23.001.20177");
             uint32_t Acrobat = getImageVMAddrSlideIndex("Acrobat.framework/Versions/A/Acrobat");
             hookPtr(Acrobat, 0x16EE830, bypass1, NULL);
         }
@@ -918,6 +924,22 @@ void AdobeApps(void){
             NSLog(@"Loading Acrobat Distiller 23.001.20143");
             uint32_t Acrobat = getImageVMAddrSlideIndex("DistillerLib.framework/Versions/A/DistillerLib");
             hookPtr(Acrobat, 0x1F70F0, bypass1, NULL);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.InCopy")) {
+        if (checkAppVersion("18.2.1.455")){
+            NSLog(@"Loading com.adobe.InCopy 18.2.1.455");
+            uint32_t Acrobat = getImageVMAddrSlideIndex("MacOS/PublicLib.dylib");
+            hookPtr(Acrobat, 0x237f30, bypass1, NULL);
+        }
+    }
+
+    if (checkSelfInject("com.adobe.InDesign")) {
+        if (checkAppVersion("18.2.1.455")){
+            NSLog(@"Loading com.adobe.InDesign 18.2.1.455");
+            uint32_t Acrobat = getImageVMAddrSlideIndex("MacOS/PublicLib.dylib");
+            hookPtr(Acrobat, 0x237f30, bypass1, NULL);
         }
     }
 }
