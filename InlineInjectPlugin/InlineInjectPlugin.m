@@ -926,6 +926,8 @@ void AdobeApps(void){
         }
     }
 
+    // image list -o -f | grep PublicLib.dylib
+    // br s -n "+[NSURL URLWithString:]" 定位找到线程位置
     if (checkSelfInject("com.adobe.InCopy")) {
         if (checkAppVersion("18.2.1.455")){
             NSLog(@"Loading com.adobe.InCopy 18.2.1.455");
