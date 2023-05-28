@@ -7,7 +7,9 @@
 #import <SwiftUI/SwiftUI.h>
 #import "rd_route.h"
 
-int bypass1(void);
+intptr_t getImageAddress(intptr_t functionAddress);
+
+intptr_t getImageAddressByIndex(uint32_t imageIndex, intptr_t functionAddress);
 
 BOOL hookPtr(uint32_t imageIndex, intptr_t addr, void *replaceMethod, void **retOriginalFunctionAddress);
 
@@ -35,9 +37,13 @@ BOOL checkSelfInject(char *name);
 BOOL checkAppVersion(char *checkVersion);
 BOOL checkAppCFBundleVersion(char *checkVersion);
 void initBaseEnv();
-
+int ret0(void);
+int ret1(void);
 
 @interface Utils : NSObject
 
 
+- (int)ret0;
+
+- (int)ret1;
 @end

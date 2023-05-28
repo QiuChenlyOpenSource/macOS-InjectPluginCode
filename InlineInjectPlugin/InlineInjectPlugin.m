@@ -260,13 +260,13 @@ int aboutDialogNew(int *ths, int *a2, int *a3) {
 
 void macsfan() {
     if (!checkSelfInject("com.crystalidea.macsfancontrol")) return;
-    if(checkAppVersion("1.5.14")){
+    if (checkAppVersion("1.5.14")) {
         intptr_t _0x69d90 = _dyld_get_image_vmaddr_slide(0) + 0x100069D90;
         rd_route((void *) _0x69d90, _0x69d90a, (void **) &_0x69d90_native);
     }
 
-    if(checkAppVersion("1.5.15")){
-        hookPtrA(0x100069030, bypass1);
+    if (checkAppVersion("1.5.15")) {
+        hookPtrA(0x100069030, ret1);
     }
 //    intptr_t addr = _dyld_get_image_vmaddr_slide(0) + 0x1000A4750;
 //    rd_route((void *) addr, aboutDialogNew, (void **) &aboutDialogOri);
@@ -277,10 +277,6 @@ void macsfan() {
 //AirBuddy2 Start
 
 int (*_0x100050480Ori)();
-
-- (BOOL)new_activated {
-    return 1;
-}
 
 int _0x100050480New() {
 //    register int r13 asm("r13"); //读取寄存器的值
@@ -316,9 +312,20 @@ void AirBuddy() {
     return @"Ke'd By QiuChenly";
 }
 
+-(id) mwebproproduct{
+    id ret = class_createInstance(objc_getClass("PADProduct"), 0);
+    return ret;
+}
+
+-(void) verifyActivationDetailsWithCompletion:arg1{
+
+}
+
 void mwebPro(void) {
     if (!checkSelfInject("com.coderforart.MWeb3")) return;
-    switchMethod(getMethodStr(@"PADProduct", @"activated"), getMethod([InlineInjectPlugin class], @selector(isAppActivated)));
+    switchMethod(getMethodStr(@"CFAPaddleMWConfig", @"product"), getMethod([InlineInjectPlugin class], @selector(mwebproproduct)));
+    switchMethod(getMethodStr(@"PADProduct", @"verifyActivationDetailsWithCompletion:"), getMethod([InlineInjectPlugin class], @selector(verifyActivationDetailsWithCompletion:)));
+    switchMethod(getMethodStr(@"PADProduct", @"activated"), getMethod([InlineInjectPlugin class], @selector(ret1)));
     switchMethod(getMethodStr(@"PADProduct", @"activationEmail"), getMethod([InlineInjectPlugin class], @selector(activationEmail)));
     switchMethod(getMethodStr(@"PADProduct", @"activationID"), getMethod([InlineInjectPlugin class], @selector(activationID)));
 //    Method activation = class_getInstanceMethod(NSClassFromString(@"PADProduct"), NSSelectorFromString(@"activated"));
@@ -344,11 +351,11 @@ void bandizip(void) {
     //7.19 0x1000821B0
     //7.20 0x1000876d0
     //7.22 0x10008A800
-    if (checkAppVersion("7.2.0")) hookPtrA(0x1000876d0, bypass1);
-    else if (checkAppVersion("7.21")) hookPtrA(0x100087050, bypass1);
-    else if (checkAppVersion("7.22")) hookPtrA(0x10008A800, bypass1);
+    if (checkAppVersion("7.2.0")) hookPtrA(0x1000876d0, ret1);
+    else if (checkAppVersion("7.21")) hookPtrA(0x100087050, ret1);
+    else if (checkAppVersion("7.22")) hookPtrA(0x10008A800, ret1);
     //激活
-    switchMethod(getMethodStr(@"LicenseManager", @"isSubscriptionEdition"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    switchMethod(getMethodStr(@"LicenseManager", @"isSubscriptionEdition"), getMethod([InlineInjectPlugin class], @selector(ret1)));
 }
 
 // End Bandizip
@@ -365,13 +372,13 @@ void bandizip(void) {
 
 void popClip() {
     if (!checkSelfInject("com.pilotmoon.popclip")) return;
-    hookPtrA(0x100083148, bypass1);
+    hookPtrA(0x100083148, ret1);
     switchMethod(getMethodStr(@"PMPurchaseInfo", @"licenseSummary"), getMethod([InlineInjectPlugin class], @selector(licenseSummary)));
-    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasLicenseKey"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"isFullAppUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasInAppPurchase"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasPaidReceipt"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasReceipt"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasLicenseKey"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"isFullAppUnlocked"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasInAppPurchase"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasPaidReceipt"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasReceipt"), getMethod([InlineInjectPlugin class], @selector(ret1)));
 }
 
 //end popclip
@@ -379,14 +386,85 @@ void popClip() {
 //Start Parallels Desktop
 void Parallels() {
     if (!checkSelfInject("com.parallels.desktop.dispatcher")) return;
-    hookPtrA(0x1005b0700, bypass1);
-    hookPtrA(0x1007c9300, bypass1);
+    if(checkAppCFBundleVersion("53488")){
+        hookPtrA(0x1005b0700, ret1);
+        hookPtrA(0x1007c9300, ret1);
+    } else if(checkAppCFBundleVersion("53606")){
+        /*
+         *  _const:00000001009B6AF8                                         ; DATA XREF: __const:00000001009B6B18↓o
+            __const:00000001009B6AF8                                         ; `vtable for'__cxxabiv1::__class_type_info
+            __const:00000001009B6B00                 dq offset aN9signature24i ; "N9Signature24ICertificateChainCheckerE"
+            __const:00000001009B6B08 off_1009B6B08   dq offset __ZTVN10__cxxabiv120__si_class_type_infoE+10h
+            __const:00000001009B6B08                                         ; DATA XREF: __const:00000001009B6AD8↑o
+            __const:00000001009B6B08                                         ; `vtable for'__cxxabiv1::__si_class_type_info
+            __const:00000001009B6B10                 dq offset aN9signature16c ; "N9Signature16ChainCheckerImplE"
+            __const:00000001009B6B18                 dq offset off_1009B6AF8
+            __const:00000001009B6B20 unk_1009B6B20   db    0                 ; DATA XREF: sub_10034CA00+28↑o
+            __const:00000001009B6B21                 db    0
+            __const:00000001009B6B22                 db    0
+            __const:00000001009B6B23                 db    0
+            __const:00000001009B6B24                 db    0
+            __const:00000001009B6B25                 db    0
+            __const:00000001009B6B26                 db    0
+            __const:00000001009B6B27                 db    0
+            __const:00000001009B6B28                 dq offset off_1009B6B58
+            __const:00000001009B6B30                 dq offset sub_1005B46B0
+            __const:00000001009B6B38                 dq offset sub_1005B46C0
+            __const:00000001009B6B40                 dq offset sub_1005B4330 <--- patch这里
+         */
+        hookPtrA(0x1005B4330, ret1);
+        // /usr/bin/codesign 调用 codesign 的函数
+        /**
+         *  __text:00000001007CD000 ; __int64 __fastcall sub_1007CD000(__int64, unsigned int, _BYTE *, const char *, const char *, __int64, char)
+            __text:00000001007CD000 sub_1007CD000   proc near               ; CODE XREF: sub_1001779D0+28F↑p
+            __text:00000001007CD000
+            __text:00000001007CD000 var_458         = qword ptr -458h
+            __text:00000001007CD000 var_450         = qword ptr -450h
+            __text:00000001007CD000 var_448         = qword ptr -448h
+            __text:00000001007CD000 var_440         = qword ptr -440h
+            __text:00000001007CD000 var_438         = dword ptr -438h
+            __text:00000001007CD000 var_430         = byte ptr -430h
+            __text:00000001007CD000 var_30          = qword ptr -30h
+            __text:00000001007CD000
+            __text:00000001007CD000                 push    rbp
+            __text:00000001007CD001                 mov     rbp, rsp
+            __text:00000001007CD004                 push    r15
+            __text:00000001007CD006                 push    r14
+            __text:00000001007CD008                 push    r13
+            __text:00000001007CD00A                 push    r12
+            __text:00000001007CD00C                 push    rbx
+            __text:00000001007CD00D                 sub     rsp, 438h
+            __text:00000001007CD014                 mov     [rbp+var_448], r8
+            __text:00000001007CD01B                 mov     [rbp+var_450], rcx
+            __text:00000001007CD022                 mov     [rbp+var_458], rdx
+            __text:00000001007CD029                 mov     r12d, esi
+            __text:00000001007CD02C                 mov     rbx, rdi
+            __text:00000001007CD02F                 mov     rax, cs:___stack_chk_guard_ptr
+            __text:00000001007CD036                 mov     rax, [rax]
+            __text:00000001007CD039                 mov     [rbp+var_30], rax
+            __text:00000001007CD03D                 mov     rcx, cs:off_100A45658 ; "4C6364ACXT"
+            __text:00000001007CD044                 lea     rdx, aAnchorAppleGen ; "=anchor apple generic and certificate l"...
+            __text:00000001007CD04B                 xor     r14d, r14d
+            __text:00000001007CD04E                 lea     rdi, [rbp+var_430] ; char *
+            __text:00000001007CD055                 mov     esi, 400h       ; size_t
+            __text:00000001007CD05A                 xor     eax, eax
+            __text:00000001007CD05C                 call    _snprintf
+            __text:00000001007CD061                 mov     [rbp+var_440], 0
+            __text:00000001007CD06C                 lea     rdi, aUsrBinCodesign ; "/usr/bin/codesign"
+            __text:00000001007CD073                 mov     esi, 1          ; int
+            __text:00000001007CD078                 call    _access
+            __text:00000001007CD07D                 test    eax, eax
+            __text:00000001007CD07F                 jz      short loc_1007CD0AA
+         */
+        hookPtrA(0x1007CD000, ret1);
+    }
+
 //    switchMethod(getMethodStr(@"PMPurchaseInfo", @"licenseSummary"), getMethod([InlineInjectPlugin class], @selector(licenseSummary)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasLicenseKey"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"isFullAppUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasInAppPurchase"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasPaidReceipt"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasReceipt"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasLicenseKey"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"isFullAppUnlocked"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasInAppPurchase"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasPaidReceipt"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+//    switchMethod(getMethodStr(@"PMPurchaseInfo", @"hasReceipt"), getMethod([InlineInjectPlugin class], @selector(ret1)));
 }
 
 //end Parallels Desktop
@@ -450,23 +528,19 @@ void AppCleaner() {
     }
      */
     if (checkAppVersion("8.1")) {
-        hookPtrA(0x100403DC0, bypass1);
+        hookPtrA(0x100403DC0, ret1);
+    } else if (checkAppVersion("8.1.1")) {
+        hookPtrA(0x100405830, ret1);
+    } else if (checkAppVersion("8.1.2")) {
+        hookPtrA(0x1003FD9F0, ret1);
+    } else if (checkAppVersion("8.1.3")) {
+        hookPtrA(0x100415D90, ret1);
+    } else if (checkAppVersion("8.1.4")) {
+        hookPtrA(0x100415FF0, ret1);
     }
-    else if (checkAppVersion("8.1.1")) {
-        hookPtrA(0x100405830, bypass1);
-    }
-    else if (checkAppVersion("8.1.2")) {
-        hookPtrA(0x1003FD9F0, bypass1);
-    }
-    else if (checkAppVersion("8.1.3")) {
-        hookPtrA(0x100415D90, bypass1);
-    }
-    else if (checkAppVersion("8.1.4")) {
-        hookPtrA(0x100415FF0, bypass1);
-    }
-    //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    //switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"isUnlocked"), getMethod([InlineInjectPlugin class], @selector(ret1)));
     //去掉打开软件弹框提示试用过期
-    switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"onAppDidFinishLaunching"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    switchMethod(getMethodStr(@"_TtC13App_Cleaner_822BaseFeaturesController", @"onAppDidFinishLaunching"), getMethod([InlineInjectPlugin class], @selector(ret1)));
 //    switchMethod(getMethodStr(@"_TtC21NKCommonCocoaControls9NKAboutWC", @"setVersionLabel"), getMethod([InlineInjectPlugin class], @selector(activationID)));
     //    switchMethod(getMethodStr(@"_TtC21NKCommonCocoaControls20LicenseWCLocalizable", @"contactUsButton"), getMethod([InlineInjectPlugin class], @selector(activationID)));
 //    switchMethod(getMethodStr(@"_TtC13App_Cleaner_820LicenseWCLocalizable", @"contactUsButton"), getMethod([InlineInjectPlugin class], @selector(activationID)));
@@ -477,7 +551,7 @@ void AppCleaner() {
 void OmiRecorder() {
     if (!checkSelfInject("com.mac.utility.screen.recorder")) return;
     //MAS 版本1.2.4 (2023020802)
-    hookPtrA(0x10001C810, bypass1);
+    hookPtrA(0x10001C810, ret1);
 }
 
 void FigPlayer() {
@@ -486,14 +560,14 @@ void FigPlayer() {
     //MAS 版本1.2.3 (2023032401)
     //    1.3.0 (2023051702)
     if (checkAppVersion("1.2.2") || checkAppVersion("1.2.3")) {
-        hookPtrA(0x1000765F0, bypass1);
+        hookPtrA(0x1000765F0, ret1);
     } else if (checkAppVersion("1.3.0")) {
-        hookPtrA(0x100076090, bypass1);
+        hookPtrA(0x100076090, ret1);
     }
 }
 
 
-int passcheck(){
+int passcheck() {
     NSLog(@"==== get check");
     return 2;
 }
@@ -504,9 +578,9 @@ int passcheck(){
 void sublimeText4() {
     if (!checkSelfInject("com.sublimetext.4")) return;
     //官方版本4147
-    if(checkAppVersion("Build 4147")) {
+    if (checkAppVersion("Build 4147")) {
         NSLog(@"==== 4147 loading");
-        hookPtrA(0x10051C86F, bypass1);
+        hookPtrA(0x10051C86F, ret1);
     }
 }
 
@@ -525,7 +599,7 @@ IMP originalFun_boolForKey = NULL;
 void xNTFS() {
     if (checkSelfInject("com.omni.mac.utility.store.ntfs")) {
         //版本1.1.4
-        hookPtrA(0x1000983a0, bypass1);//AppStore版本
+        hookPtrA(0x1000983a0, ret1);//AppStore版本
         return;
     }
     if (!checkSelfInject("com.omni.mac.utility.website.ntfs")) return;
@@ -577,11 +651,11 @@ void xNTFS() {
 /**
  解优2 AppStore https://apps.apple.com/cn/app/%E8%A7%A3%E4%BC%98-2-%E4%B8%93%E4%B8%9A%E7%9A%84-7z-rar-zip-%E8%A7%A3%E5%8E%8B%E7%BC%A9%E5%B7%A5%E5%85%B7/id1525983573?mt=12
  */
-void BestZip2(void){
+void BestZip2(void) {
     if (!checkSelfInject("com.artdesktop.bestzip2")) return;
-    if (!checkAppVersion("1.6.x")){
+    if (!checkAppVersion("1.6.x")) {
         // 兼容以后版本
-        switchMethod(getMethodStr(@"EIAPManager", @"purchased"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+        switchMethod(getMethodStr(@"EIAPManager", @"purchased"), getMethod([InlineInjectPlugin class], @selector(ret1)));
     }
 }
 
@@ -616,12 +690,12 @@ void BestZip2(void){
  return result;
 }
  */
-void OmniPlayer(void){
+void OmniPlayer(void) {
     if (!checkSelfInject("com.mac.utility.media.player")) return;
-    if (checkAppVersion("2.0.18") || checkAppVersion("2.0.19")){
-        hookPtrA(0x1001C1600, bypass1);
-    } else if (checkAppVersion("2.1.0")){
-        hookPtrA(0x1001C4080, bypass1);
+    if (checkAppVersion("2.0.18") || checkAppVersion("2.0.19")) {
+        hookPtrA(0x1001C1600, ret1);
+    } else if (checkAppVersion("2.1.0")) {
+        hookPtrA(0x1001C4080, ret1);
     }
 }
 
@@ -637,44 +711,43 @@ void OmniPlayer(void){
      <key>CFBundleShortVersionString</key>
      <string>1.4.7</string>
  */
-void filmagescreen(void){
+void filmagescreen(void) {
     if (!checkSelfInject("com.filmage.screen.mac")) return;
-    if (!checkAppVersion("1.4.7.x")){
-        switchMethod(getMethodStr(@"IAPWindow", @"didPay"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+    if (!checkAppVersion("1.4.7.x")) {
+        switchMethod(getMethodStr(@"IAPWindow", @"didPay"), getMethod([InlineInjectPlugin class], @selector(ret1)));
     }
 }
 
--(void) validate{
+- (void)validate {
     NSLog(@"==== validate 函数绕过成功。");
 }
-
 
 
 /**
  * Navicat Premium 16.1.7
  * MAS版本 https://apps.apple.com/cn/app/navicat-premium-16/id1594061654?mt=12
  */
-void NavicatPremium(void){
+void NavicatPremium(void) {
     if (!checkSelfInject("com.navicat.NavicatPremium")) return;
 
     //class_getInstanceMethod 得到类的实例方法
     //class_getClassMethod 得到类的类方法
 
-    if (!checkAppVersion("16.1.7.x")){
+    if (!checkAppVersion("16.1.7.x")) {
 
         uint32_t size = _dyld_image_count();//获取所有加载的映像
-        NSLog(@"==== 加载的映像数量: %i",size);
+        NSLog(@"==== 加载的映像数量: %i", size);
 
         NSLog(@"==== 函数地址：validate = %p ，函数地址：isProductSubscriptionStillValid = %p",
-              getMethodStrByCls(@"AppStoreReceiptValidation",@"validate"),
-              getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid")
+                getMethodStrByCls(@"AppStoreReceiptValidation", @"validate"),
+                getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid")
         );
 
-        for(int a=0;a<size;a++){
-            const char* name = _dyld_get_image_name(a);//根据映像下标取名称
-            NSLog(@"==== Slide: %i,ModuleName: %s",a,name);
+        for (int a = 0; a < size; a++) {
+            const char *name = _dyld_get_image_name(a);//根据映像下标取名称
+            NSLog(@"==== Slide: %i,ModuleName: %s", a, name);
 
-            if(strcmp("/Applications/Navicat Premium.app/Contents/Frameworks/libcc-premium.dylib", name)==0){
+            if (strcmp("/Applications/Navicat Premium.app/Contents/Frameworks/libcc-premium.dylib", name) == 0) {
                 NSLog(@"==== find libcc-premium.dylib!");
                 //class_getClassMethod这里不能用Instance 会返回nil 从gpt回复中可以看出类的实例不代表类函数 所以一般应该用getClassMethod就不会报错nil
                 // 下面是ChatGPT的回答
@@ -691,17 +764,39 @@ void NavicatPremium(void){
 
                  需要注意的是，类方法是属于类的，而不是属于类的实例。因此，如果要获取类方法的Method对象，需要使用类对象而不是实例对象。例如，对于类Person，可以使用[Person class]获取它的类对象，然后再使用class_getClassMethod获取类方法的Method对象。
                  */
-                switchMethod(getMethodStrByCls(@"AppStoreReceiptValidation",@"validate"), getMethod([InlineInjectPlugin class], @selector(validate)));
+                switchMethod(getMethodStrByCls(@"AppStoreReceiptValidation", @"validate"), getMethod([InlineInjectPlugin class], @selector(validate)));
                 continue;
             }
 
-            if(strcmp("/Applications/Navicat Premium.app/Contents/MacOS/Navicat Premium", name)==0){
+            if (strcmp("/Applications/Navicat Premium.app/Contents/MacOS/Navicat Premium", name) == 0) {
                 NSLog(@"==== find Navicat Premium!");
-                switchMethod(getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+                switchMethod(getMethodStr(@"IAPHelper", @"isProductSubscriptionStillValid"), getMethod([InlineInjectPlugin class], @selector(ret1)));
                 continue;
             }
         }
     }
+}
+
+
+- (id)iapStatus {
+    id it = class_createInstance(objc_getClass("FCTraktIAPStatus"), 0);
+    [it performSelector:NSSelectorFromString(@"setExpirationDate:") withObject:@0];
+//    [it performSelector:NSSelectorFromString(@"setStatus:") withObject:@1]; //这个函数这样子调用居然无效 我是真不懂了这下
+    [it performSelector:NSSelectorFromString(@"setUnlockedDTS:") withObject:@1];
+    [it performSelector:NSSelectorFromString(@"setUnlockedDolby:") withObject:@1];
+
+    NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
+    [dateComponents setYear:2999];
+    [dateComponents setMonth:5];
+    [dateComponents setDay:25];
+    [dateComponents setHour:15];
+    [dateComponents setMinute:30];
+
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    NSDate *customDate = [calendar dateFromComponents:dateComponents];
+    [it performSelector:NSSelectorFromString(@"setExpirationDate:") withObject:customDate];
+    NSLog(@"输出 %@", it);
+    return it;
 }
 
 /**
@@ -709,32 +804,34 @@ void NavicatPremium(void){
  * 版本7.5.1 (7.5.4394)
  * https://apps.apple.com/cn/app/infuse-%E6%99%BA%E8%83%BD%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE%E5%99%A8/id1136220934
  */
-void infuse(void){
+void infuse(void) {
     if (!checkSelfInject("com.firecore.infuse")) return;
-    if (checkAppCFBundleVersion("7.5.4410") || checkAppCFBundleVersion("7.5.4425")){
+    if (checkAppCFBundleVersion("7.5.4410") || checkAppCFBundleVersion("7.5.4425")) {
         NSLog(@"Loading InFuse 4410");
-        switchMethod(getMethodStr(@"FCInAppPurchaseServiceFreemium", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
-    } else if (checkAppCFBundleVersion("7.5.4381")){
+        switchMethod(getMethodStr(@"FCTraktIAPStatus", @"status"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+        switchMethod(getMethodStr(@"FCTraktIAPManager", @"receivedStatus"), getMethod([InlineInjectPlugin class], @selector(iapStatus)));
+        return;
+//        switchMethod(getMethodStr(@"FCInAppPurchaseServiceFreemium", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+        switchMethod(getMethodStr(@"FCTraktIAPManager", @"iapStatus"), getMethod([InlineInjectPlugin class], @selector(iapStatus)));
+        switchMethod(getMethodStr(@"FCTraktIAPStatus", @"isAlivePro"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+        switchMethod(getMethodStr(@"FCTraktIAPManager", @"deviceList"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+        switchMethod(getMethodStr(@"FCTraktTVDeviceList", @"containsCurrentDevice"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+
+    } else if (checkAppCFBundleVersion("7.5.4381")) {
         NSLog(@"Loading InFuse 4381");
-        switchMethod(getMethodStr(@"FCInAppPurchaseServiceMobile", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(new_activated)));
+        switchMethod(getMethodStr(@"FCInAppPurchaseServiceMobile", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(ret1)));
     }
-}
-
-
-bool modifyResult(void){
-    NSLog(@"正在Hook Ptr Paste");
-    return 0x0;
 }
 
 /**
  * Paste 3.1.9
  * https://apps.apple.com/cn/app/paste-clipboard-manager/id967805235
  */
-void Paste(void){
+void Paste(void) {
     if (!checkSelfInject("com.wiheads.paste")) return;
-    if (checkAppVersion("3.1.9")){
+    if (checkAppVersion("3.1.9")) {
         NSLog(@"Loading Paste");
-        hookPtrA(0x1001f9f10, modifyResult);
+        hookPtrA(0x1001f9f10, ret0);
     }
 }
 
@@ -764,39 +861,38 @@ void Paste(void){
      }
  * ```
  */
-void Office(void){
-    if(checkSelfInject("com.microsoft.Excel") || checkSelfInject("com.microsoft.Powerpoint") || checkSelfInject("com.microsoft.Word")){
+void Office(void) {
+    if (checkSelfInject("com.microsoft.Excel") || checkSelfInject("com.microsoft.Powerpoint") || checkSelfInject("com.microsoft.Word")) {
         uint32_t mso99_addr;
         uint32_t mso30_addr;
 
         uint32_t mso30 = getImageVMAddrSlideIndex("mso30");
         uint32_t mso99 = getImageVMAddrSlideIndex("mso99");
-        if (checkAppVersion("16.71")){
+        if (checkAppVersion("16.71")) {
             mso99_addr = 0x5076;
             mso30_addr = 0x81b0f;
-        } else if (checkAppVersion("16.72")){
+        } else if (checkAppVersion("16.72")) {
             mso30_addr = 0x7e82f;
             mso99_addr = 0x6666;
-        } else if (checkAppVersion("16.73")){
+        } else if (checkAppVersion("16.73")) {
             mso30_addr = 0x8167f; //Mso::Licensing::Category::IsSubscription
             mso99_addr = 0x5356; //-[DocsUILicensing isActivated]: 找 call       qword [rcx+8]
         } else {
             NSLog(@"版本不对，取消注入。");
             return;
         }
-        hookPtr(mso99, mso99_addr, bypass1, NULL);
-        hookPtr(mso30, mso30_addr, bypass1, NULL);
+        hookPtr(mso99, mso99_addr, ret1, NULL);
+        hookPtr(mso30, mso30_addr, ret1, NULL);
     }
 }
 
-void AdobeApps(void){
+void AdobeApps(void) {
     if (checkSelfInject("com.adobe.Photoshop")) {
         //Adobe Photoshop 2023
-        if (checkAppVersion("24.2.0")){
+        if (checkAppVersion("24.2.0")) {
             NSLog(@"Loading AdobeApps 24.2.0");
-            hookPtrA(0x10412069E, bypass1);
-        }
-        else if (checkAppVersion("24.4.1")){
+            hookPtrA(0x10412069E, ret1);
+        } else if (checkAppVersion("24.4.1")) {
             NSLog(@"Loading AdobeApps 24.4.1");
             // %s: Initial profile failure: not licensed from cache (profile status %d) 搜索这个直接定位到目标函数
             // (*(void (__fastcall **)(__int64, const char *, const char *, _QWORD))(*(_QWORD *)v114 + 32LL))(
@@ -808,85 +904,85 @@ void AdobeApps(void){
             // __int64 __fastcall adobe::nglcontroller::NglController::ProcessV2Profile(__int64 a1, __int64 a2, __int64 a3, __int64 a4)
 
             // https://ims-prod06.adobelogin.com/ims/token/v4
-            hookPtrA(0x1041BA110, bypass1);//这个函数是实际检查用户权限函数 nop掉就不提示窗口
-//        hookPtrA(0x10424E59C, bypass1);//这个函数是检查账户权限线程
-        } else if (checkAppVersion("24.5.0")){
+            hookPtrA(0x1041BA110, ret1);//这个函数是实际检查用户权限函数 nop掉就不提示窗口
+//        hookPtrA(0x10424E59C, ret1);//这个函数是检查账户权限线程
+        } else if (checkAppVersion("24.5.0")) {
             NSLog(@"Loading AdobeApps 24.5.0");
-            hookPtrA(0x10420BE40, bypass1);
+            hookPtrA(0x10420BE40, ret1);
         }
     }
 
     if (checkSelfInject("com.adobe.LightroomClassicCC7")) {
         //Adobe Lightroom Classic
-        if (checkAppVersion("12.3")){
+        if (checkAppVersion("12.3")) {
             NSLog(@"Loading LightroomClassicCC7 12.3");
-//            hookPtrA(0x1001AE6C7, bypass1);
-            hookPtrA(0x100027638, bypass1);
+//            hookPtrA(0x1001AE6C7, ret1);
+            hookPtrA(0x100027638, ret1);
         }
     }
 
     if (checkSelfInject("com.adobe.Adobe-Animate-2023.application")) {
         //Adobe Animate 2023
-        if (checkAppVersion("23.0.1")){
+        if (checkAppVersion("23.0.1")) {
             NSLog(@"Loading Adobe Animate 2023 23.0.1");
-            hookPtrA(0x100019F10, bypass1);
+            hookPtrA(0x100019F10, ret1);
         }
     }
 
     if (checkSelfInject("com.adobe.xd")) {
         //sudo insert_dylib /Users/qiuchenly/Library/Caches/JetBrains/AppCode2023.1/DerivedData/InlineInjectPlugin-eklzvojrwuuobhdysecelanfrlvy/Build/Products/Debug/libInlineInjectPlugin.dylib /Applications/Adobe\ XD/Adobe\ XD.app/Contents/Frameworks/nanopb.framework/Versions/A/nanopb_副本 /Applications/Adobe\ XD/Adobe\ XD.app/Contents/Frameworks/nanopb.framework/Versions/A/nanopb
         //Adobe XD
-        if (checkAppVersion("56.1.12.1")){
+        if (checkAppVersion("56.1.12.1")) {
             NSLog(@"Loading Adobe XD 56.1.12.1");
-            hookPtrA(0x100B78FC4, bypass1);
+            hookPtrA(0x100B78FC4, ret1);
         }
     }
 
     if (checkSelfInject("com.adobe.Audition")) {
         //Adobe Audition 2023
-        if (checkAppVersion("23.3")){
+        if (checkAppVersion("23.3")) {
             NSLog(@"==== Loading Adobe Audition 2023 23.3");
             uint32_t AuUI = getImageVMAddrSlideIndex("AuUI.framework/Versions/A/AuUI");
-            hookPtr(AuUI, 0xD06D40, bypass1, NULL);
+            hookPtr(AuUI, 0xD06D40, ret1, NULL);
         }
     }
 
     if (checkSelfInject("com.adobe.illustrator")) {
         //Adobe Illustrator
-        if (checkAppVersion("27.5.0")){
+        if (checkAppVersion("27.5.0")) {
             NSLog(@"Loading com.adobe.illustrator 27.5.0");
-            hookPtrA(0x100BF9F84, bypass1);
+            hookPtrA(0x100BF9F84, ret1);
         }
     }
 
     if (checkSelfInject("com.adobe.dreamweaver-18.1")) {
         //Adobe Illustrator
-        if (checkAppVersion("21.3.0.15593")){
+        if (checkAppVersion("21.3.0.15593")) {
             NSLog(@"Loading com.adobe.dreamweaver-18.1 21.3.0.15593");
-            hookPtrA(0x1018927C0, bypass1);
+            hookPtrA(0x1018927C0, ret1);
         }
     }
 
     if (checkSelfInject("com.adobe.AfterEffects")) {
         //After Effects 2023
         uint32_t AfterFXLib = getImageVMAddrSlideIndex("AfterFXLib");
-        if (checkAppVersion("23.3")){
+        if (checkAppVersion("23.3")) {
             NSLog(@"Loading com.adobe.AfterEffects 23.3");
-            hookPtr(AfterFXLib, 0x11C52C0, bypass1, NULL);
-        } else if (checkAppVersion("23.4")){
+            hookPtr(AfterFXLib, 0x11C52C0, ret1, NULL);
+        } else if (checkAppVersion("23.4")) {
             NSLog(@"Loading com.adobe.AfterEffects 23.4");
-            hookPtr(AfterFXLib, 0x11e99a0, bypass1, NULL);
+            hookPtr(AfterFXLib, 0x11e99a0, ret1, NULL);
         }
     }
 
     if (checkSelfInject("com.adobe.ame.application.23")) {
         //Adobe Media Encoder 2023
-        if (checkAppVersion("23.3")){
+        if (checkAppVersion("23.3")) {
             NSLog(@"Loading Adobe Media Encoder 2023 23.3");
-            hookPtrA(0x1000E3180, bypass1);
-        } else if (checkAppVersion("23.4")){
+            hookPtrA(0x1000E3180, ret1);
+        } else if (checkAppVersion("23.4")) {
             NSLog(@"Loading Adobe Media Encoder 2023 23.4");
-            hookPtrA(0x1000eaed0, bypass1);
+            hookPtrA(0x1000eaed0, ret1);
         }
     }
 
@@ -894,55 +990,134 @@ void AdobeApps(void){
         //Adobe Premiere Pro 2023
         uint32_t AfterFXLib = getImageVMAddrSlideIndex("Frontend");
         uint32_t Registration = getImageVMAddrSlideIndex("Registration");
-        if (checkAppVersion("23.3")){
+        if (checkAppVersion("23.3")) {
             NSLog(@"Loading com.adobe.PremierePro 23.3");
-//            hookPtr(AfterFXLib, 0x2095C0, bypass1, NULL);
-            hookPtr(Registration, 0x4D3A0, bypass1, NULL);
-        } else if (checkAppVersion("23.4")){
+//            hookPtr(AfterFXLib, 0x2095C0, ret1, NULL);
+            hookPtr(Registration, 0x4D3A0, ret1, NULL);
+        } else if (checkAppVersion("23.4")) {
             NSLog(@"Loading com.adobe.PremierePro 23.4");
-            hookPtr(Registration, 0x5c950, bypass1, NULL);
+            hookPtr(Registration, 0x5c950, ret1, NULL);
         }
     }
 
     if (checkSelfInject("com.adobe.Acrobat.Pro")) {
         //Acrobat
-        if (checkAppVersion("23.001.20143")){
+        if (checkAppVersion("23.001.20143")) {
             NSLog(@"Loading Acrobat 23.001.20143");
             uint32_t Acrobat = getImageVMAddrSlideIndex("Acrobat.framework/Versions/A/Acrobat");
-            hookPtr(Acrobat, 0x16EE830, bypass1, NULL);
-        } else if (checkAppVersion("23.001.20177")){
+            hookPtr(Acrobat, 0x16EE830, ret1, NULL);
+        } else if (checkAppVersion("23.001.20177")) {
             NSLog(@"Loading Acrobat 23.001.20177");
             uint32_t Acrobat = getImageVMAddrSlideIndex("Acrobat.framework/Versions/A/Acrobat");
-            hookPtr(Acrobat, 0x16EE830, bypass1, NULL);
+            hookPtr(Acrobat, 0x16EE830, ret1, NULL);
         }
     }
 
     if (checkSelfInject("com.adobe.distiller")) {
         //Acrobat Distiller
-        if (checkAppVersion("23.001.20143")){
+        if (checkAppVersion("23.001.20143")) {
             NSLog(@"Loading Acrobat Distiller 23.001.20143");
             uint32_t Acrobat = getImageVMAddrSlideIndex("DistillerLib.framework/Versions/A/DistillerLib");
-            hookPtr(Acrobat, 0x1F70F0, bypass1, NULL);
+            hookPtr(Acrobat, 0x1F70F0, ret1, NULL);
         }
     }
 
     // image list -o -f | grep PublicLib.dylib
     // br s -n "+[NSURL URLWithString:]" 定位找到线程位置
     if (checkSelfInject("com.adobe.InCopy")) {
-        if (checkAppVersion("18.2.1.455")){
-            NSLog(@"Loading com.adobe.InCopy 18.2.1.455");
-            uint32_t Acrobat = getImageVMAddrSlideIndex("MacOS/PublicLib.dylib");
-            hookPtr(Acrobat, 0x237f30, bypass1, NULL);
+        uint32_t Acrobat = getImageVMAddrSlideIndex("MacOS/PublicLib.dylib");
+        if (checkAppVersion("18.2.1.455")) {
+            hookPtr(Acrobat, 0x237f30, ret1, NULL);
+        } else if (checkAppVersion("18.3.0.50")) {
+            hookPtr(Acrobat, 0x23A100, ret1, NULL);
         }
     }
 
     if (checkSelfInject("com.adobe.InDesign")) {
-        if (checkAppVersion("18.2.1.455")){
-            NSLog(@"Loading com.adobe.InDesign 18.2.1.455");
-            uint32_t Acrobat = getImageVMAddrSlideIndex("MacOS/PublicLib.dylib");
-            hookPtr(Acrobat, 0x237f30, bypass1, NULL);
+        uint32_t Acrobat = getImageVMAddrSlideIndex("MacOS/PublicLib.dylib");
+        if (checkAppVersion("18.2.1.455")) {
+            hookPtr(Acrobat, 0x237f30, ret1, NULL);
+        } else if (checkAppVersion("18.3.0.50")) {
+            hookPtr(Acrobat, 0x23A100, ret1, NULL);
         }
     }
+}
+
+/**
+ * 旧版劫持代码方式 其实可以直接调用
+ * @param a1
+ * @param a2
+ * @return
+ */
+int revertMain(int a1, int a2) {
+    int (*sub_10041F51E)(int, int) = (void *) getImageAddress(0x10041F51E);//MainApplication绕过执行反调试代码
+    return sub_10041F51E(a1, a2);
+}
+
+int ret2(void) {
+    //5.1.1 2235
+//    int *dword_1007E0DE0 = (void *) _dyld_get_image_vmaddr_slide(0) + 0x1007E0DE0;
+//    *dword_1007E0DE0 = 2; //强制修改内存地址中的激活值
+
+    //5.1.1 2237
+//    *dword_1007E0EA0 = 2
+    //幸好这里只需要劫持这个函数即可 否则修改内存地址在这里还需要单独判断并修改
+
+    int r = hookMethod();
+    NSLog(@"==== 输出的原始返回值 %i", r);
+    r = 2;
+    NSLog(@"==== 输出的修改返回值 %i", r);
+    return r;
+}
+
+/**
+ * 更新授权信息 让字符串正常显示
+ * @return
+ */
+- (id)settings {
+    id ret = class_createInstance(objc_getClass("SGMEnterpriseSettings"), 0);
+    [ret performSelector:NSSelectorFromString(@"setCompanyID:") withObject:@"QiuChenly"];
+    [ret performSelector:NSSelectorFromString(@"setCompanyName:") withObject:@"K'ed By TNT｜HCISO"];
+    [ret performSelector:NSSelectorFromString(@"setUserID:") withObject:@"QiuChenly@52pojie.cn"];
+    return ret;
+}
+
+/**
+ * 原始函数指针
+ * @return
+ */
+int (*hookMethod)() = NULL;
+
+void surge(void) {
+    if (!checkSelfInject("com.nssurge.surge-mac")) return;
+    if (checkAppVersion("5.1.0")) {
+        hookPtrA(0x1002ABCBE, revertMain);//过掉反调试
+        hookPtrA(0x100185a43, ret2);//返回 2 即可
+    } else if (checkAppVersion("5.1.1") && checkAppCFBundleVersion("2235")) {
+        hookPtrA(0x1002B0D9C, (void *) getImageAddress(0x10057F162));//过掉反调试 直接把入口函数挂到 MainApplication
+        hookPtrZ(0x100189921, ret2, (void **) &hookMethod);//劫持返回函数 用来返回 2 表示激活
+        hookPtrA(0x1001724F7, ret1);// 改为企业版授权
+    } else if (checkAppVersion("5.1.1") && (
+                    checkAppCFBundleVersion("2237") ||
+                    checkAppCFBundleVersion("2238") ||
+                    checkAppCFBundleVersion("2239") ||
+            TRUE
+    )) {
+        intptr_t start = 0x1002B0059;
+        if (checkAppCFBundleVersion("2237")) {
+            start = 0x1002B0059;
+        } else if (checkAppCFBundleVersion("2238")) {
+            start = 0x1002AFF59;
+        } else if (checkAppCFBundleVersion("2239")){
+            start = 0x10057F162;
+        }
+//        hookPtrA(start, (void *) getImageAddress(0x10057F162));//过掉反调试 直接把入口函数挂到 MainApplication
+        // void __cdecl -[WindowController exec](WindowController *self, SEL a2)
+        hookPtrZ(0x100188B51, ret2, (void **) &hookMethod);//劫持返回函数 用来返回 2 表示激活
+        // void __cdecl -[SGMLicenseViewController viewDidLoad](SGMLicenseViewController *self, SEL a2)
+        hookPtrA(0x100171727, ret1);// 改为企业版授权
+    }
+    switchMethod(getMethodStr(@"SGMEnterprise", @"settings"), getMethod([InlineInjectPlugin class], @selector(settings)));//显示企业授权信息
 }
 
 
@@ -971,6 +1146,7 @@ void AdobeApps(void){
 //    Paste(); //无法使用
     Office();
     AdobeApps();
+    surge();
 }
 
 @end

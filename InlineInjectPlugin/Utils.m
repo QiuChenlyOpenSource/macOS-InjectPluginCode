@@ -8,12 +8,63 @@
 @implementation Utils
 
 /**
+ * 一个返回值为0的空函数
+ * 使用方法 ret0/1
+ * @return 0
+ */
+int ret0(void) {
+    return 0;
+}
+
+/**
+ * 一个返回值为1的空函数
+ * 使用方法 ret0/1
+ * @return 1
+ */
+int ret1(void) {
+    return 1;
+}
+
+/**
+ * 一个返回值为0的空函数\n
+ * 使用方法 \@selector(ret0/1)
+ * @return 0
+ */
+- (int)ret0 {
+    NSLog(@"正在Hook返回值为 0");
+    return 0;
+}
+
+/**
  * 一个返回值为1的空函数
  * @return 1
  */
-int bypass1(void) {
+- (int)ret1 {
     NSLog(@"正在Hook返回值为 1");
     return 1;
+}
+
+/**
+ * 获取指定镜像的函数偏移地址在物理内存中的实际地址
+ * @param imageIndex 镜像序号  0 为 app 自身
+ * @param functionAddress 欲拦截的函数地址
+ * @return 函数物理内存地址
+ */
+intptr_t getImageAddressByIndex(uint32_t imageIndex, intptr_t functionAddress) {
+    intptr_t addrA = _dyld_get_image_vmaddr_slide(imageIndex);
+    const char *Name = _dyld_get_image_name(imageIndex);
+    intptr_t originalAddress = addrA + functionAddress;
+    NSLog(@"==== 模块序号:%i,模块名称: %s,获取到模块偏移: %p, 最终地址为%p", imageIndex, Name, addrA, originalAddress);
+    return originalAddress;
+}
+
+/**
+ * 获取 App 自身偏移地址函数的内存地址
+ * @param functionAddress 函数地址
+ * @return 返回函数内存地址
+ */
+intptr_t getImageAddress(intptr_t functionAddress) {
+    return getImageAddressByIndex(0,functionAddress);
 }
 
 /**
@@ -28,9 +79,7 @@ int bypass1(void) {
  */
 BOOL hookPtr(uint32_t imageIndex, intptr_t addr, void *replaceMethod, void **retOriginalFunctionAddress) {
     NSLog(@"==== 正在Hook Ptr %p", (void *) addr);
-    intptr_t addrA = _dyld_get_image_vmaddr_slide(imageIndex);
-    intptr_t originalAddress = addrA + addr;
-    NSLog(@"==== 模块序号:%i,获取到模块偏移: %p, 最终地址为%p", imageIndex, addrA, originalAddress);
+    intptr_t originalAddress = getImageAddressByIndex(imageIndex, addr);
     return rd_route((void *) originalAddress, replaceMethod, retOriginalFunctionAddress) == KERN_SUCCESS;
 }
 
@@ -184,14 +233,6 @@ void initBaseEnv() {
     myAppCFBundleVersion = [appCFBundleVersion UTF8String];
 //    myAppBundleName = [appName cStringUsingEncoding:NSASCIIStringEncoding];
     NSLog(@"==== AppName is [%s],Version is [%s], myAppCFBundleVersion is [%s].", myAppBundleName, myAppBundleVersionCode, myAppCFBundleVersion);
-}
-
-/**
- * Swift方式的bypass1函数实现
- * @return 返回1
- */
-- (BOOL)isAppActivated {
-    return 0x1;
 }
 
 /**
