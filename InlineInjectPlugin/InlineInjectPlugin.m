@@ -312,12 +312,12 @@ void AirBuddy() {
     return @"Ke'd By QiuChenly";
 }
 
--(id) mwebproproduct{
+- (id)mwebproproduct {
     id ret = class_createInstance(objc_getClass("PADProduct"), 0);
     return ret;
 }
 
--(void) verifyActivationDetailsWithCompletion:arg1{
+- (void)verifyActivationDetailsWithCompletion:arg1 {
 
 }
 
@@ -386,10 +386,10 @@ void popClip() {
 //Start Parallels Desktop
 void Parallels() {
     if (!checkSelfInject("com.parallels.desktop.dispatcher")) return;
-    if(checkAppCFBundleVersion("53488")){
+    if (checkAppCFBundleVersion("53488")) {
         hookPtrA(0x1005b0700, ret1);
         hookPtrA(0x1007c9300, ret1);
-    } else if(checkAppCFBundleVersion("53606")){
+    } else if (checkAppCFBundleVersion("53606")) {
         /*
          *  _const:00000001009B6AF8                                         ; DATA XREF: __const:00000001009B6B18↓o
             __const:00000001009B6AF8                                         ; `vtable for'__cxxabiv1::__class_type_info
@@ -1098,26 +1098,41 @@ void surge(void) {
         hookPtrZ(0x100189921, ret2, (void **) &hookMethod);//劫持返回函数 用来返回 2 表示激活
         hookPtrA(0x1001724F7, ret1);// 改为企业版授权
     } else if (checkAppVersion("5.1.1") && (
-                    checkAppCFBundleVersion("2237") ||
+            checkAppCFBundleVersion("2237") ||
                     checkAppCFBundleVersion("2238") ||
                     checkAppCFBundleVersion("2239") ||
-            TRUE
+                    TRUE
     )) {
         intptr_t start = 0x1002B0059;
+        intptr_t active = 0x100188B51;
+        intptr_t enterprise = 0x100171727;
         if (checkAppCFBundleVersion("2237")) {
             start = 0x1002B0059;
         } else if (checkAppCFBundleVersion("2238")) {
             start = 0x1002AFF59;
-        } else if (checkAppCFBundleVersion("2239")){
+        } else if (checkAppCFBundleVersion("2239")) {
             start = 0x10057F162;
+        } else if (checkAppCFBundleVersion("2246")) {
+            start = 0x1002affd9;
+            active = 0x100188bd1;
+            enterprise = 0x1001717a7;
         }
-//        hookPtrA(start, (void *) getImageAddress(0x10057F162));//过掉反调试 直接把入口函数挂到 MainApplication
+        hookPtrA(start, (void *) getImageAddress(0x10057F162));//过掉反调试 直接把入口函数挂到 MainApplication
         // void __cdecl -[WindowController exec](WindowController *self, SEL a2)
-        hookPtrZ(0x100188B51, ret2, (void **) &hookMethod);//劫持返回函数 用来返回 2 表示激活
+        hookPtrZ(active, ret2, (void **) &hookMethod);//劫持返回函数 用来返回 2 表示激活
         // void __cdecl -[SGMLicenseViewController viewDidLoad](SGMLicenseViewController *self, SEL a2)
-        hookPtrA(0x100171727, ret1);// 改为企业版授权
+        hookPtrA(enterprise, ret1);// 改为企业版授权
     }
     switchMethod(getMethodStr(@"SGMEnterprise", @"settings"), getMethod([InlineInjectPlugin class], @selector(settings)));//显示企业授权信息
+}
+
+void Reveal2(void) {
+    if (!checkSelfInject("com.ittybittyapps.Reveal2")) return;
+
+    if (checkAppCFBundleVersion("17801")) {
+        intptr_t Security = getImageVMAddrSlideIndex("Security.framework/Versions/A/Security");
+        hookPtrA(0x1006D10AB, ret1);//过掉反调试 Step1
+    }
 }
 
 
@@ -1147,5 +1162,6 @@ void surge(void) {
     Office();
     AdobeApps();
     surge();
+    Reveal2();
 }
 @end

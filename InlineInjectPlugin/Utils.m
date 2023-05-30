@@ -13,6 +13,7 @@
  * @return 0
  */
 int ret0(void) {
+    NSLog(@"==== 返回值0.");
     return 0;
 }
 
@@ -22,6 +23,7 @@ int ret0(void) {
  * @return 1
  */
 int ret1(void) {
+    NSLog(@"==== 返回值1.");
     return 1;
 }
 
