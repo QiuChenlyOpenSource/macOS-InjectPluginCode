@@ -1114,38 +1114,10 @@ void surge(void) {
             start = 0x1002AFF59;
         } else if (checkAppCFBundleVersion("2239")) {
             start = 0x10057F162;
-        } else if (checkAppCFBundleVersion("2246")) {
-            start = 0x1002affd9;
-            active = 0x100188bd1;
-            enterprise = 0x1001717a7;
-        } else if (checkAppCFBundleVersion("2250")) {
-            start = 0x1002b06de;
-            active = 0x100188e91;
-            enterprise = 0x100171a67;
-        } else if (checkAppCFBundleVersion("2251")) {
-            start = 0x1002b0962;
-            active = 0x100188fd1;
-            enterprise = 0x100171ba7;
-        } else if (checkAppCFBundleVersion("2252")) {
-            start = 0x1002b0a02;
-            active = 0x100189071;
-            enterprise = 0x100171c47;
-        } else if (checkAppCFBundleVersion("2253")) {
-            start = 0x1002b08c2;
-            active = 0x100188f31;
-            enterprise = 0x100171b07;
-        } else if (checkAppCFBundleVersion("2255")) {
-            start = 0x1002b09c2;
-            active = 0x100188f31;
-            enterprise = 0x100171b07;
-        } else if (checkAppCFBundleVersion("2259")) {
-            start = 0x1002b0a82;
-            active = 0x100188f41;
-            enterprise = 0x100171ac7;
-        } else if (checkAppCFBundleVersion("2261")) {
-            start = 0x1002b0ab2;
-            active = 0x100189001;
-            enterprise = 0x100171b87;
+        } else if (checkAppCFBundleVersion("2263")) {
+            start = 0x1002afc32;
+            active = 0x100187ef1;
+            enterprise = 0x100170a77;
         }
         hookPtrA(start, (void *) getImageAddress(0x10057F162));//过掉反调试 直接把入口函数挂到 MainApplication
         // void __cdecl -[WindowController exec](WindowController *self, SEL a2)
