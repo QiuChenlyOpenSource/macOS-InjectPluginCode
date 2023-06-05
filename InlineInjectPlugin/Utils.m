@@ -157,6 +157,19 @@ Method getMethodStrByCls(NSString *cls, NSString *name) {
 }
 
 /**
+ * 获取Object C类中的Ivar 一般用在函数hook上 但是还想调用内部成员的情况下
+ * @param self 直接传self
+ * @param ivarName 变量名称 self->ivarName 或者 [self appInstance]这种
+ * @return 返回id包装类 可以自由转为任意对象或者直接调用
+ */
+id getInstanceIvar(id self, const char *ivarName) {
+    Class cls = object_getClass(self);
+    Ivar v = class_getInstanceVariable(cls, ivarName);
+    id ret = object_getIvar(self, v);
+    return ret;
+}
+
+/**
  * 给定一个字符串 检查是否存在于app的framework中并返回index
  */
 uint32_t getImageVMAddrSlideIndex(char *ModuleName) {

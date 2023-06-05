@@ -806,7 +806,7 @@ void NavicatPremium(void) {
  */
 void infuse(void) {
     if (!checkSelfInject("com.firecore.infuse")) return;
-    if (checkAppCFBundleVersion("7.5.4410") || checkAppCFBundleVersion("7.5.4425")) {
+    if (checkAppCFBundleVersion("7.5.4410") || checkAppCFBundleVersion("7.5.4425") || TRUE) {
         NSLog(@"Loading InFuse 4410");
         switchMethod(getMethodStr(@"FCTraktIAPStatus", @"status"), getMethod([InlineInjectPlugin class], @selector(ret1)));
         switchMethod(getMethodStr(@"FCTraktIAPManager", @"receivedStatus"), getMethod([InlineInjectPlugin class], @selector(iapStatus)));
@@ -816,7 +816,6 @@ void infuse(void) {
         switchMethod(getMethodStr(@"FCTraktIAPStatus", @"isAlivePro"), getMethod([InlineInjectPlugin class], @selector(ret1)));
         switchMethod(getMethodStr(@"FCTraktIAPManager", @"deviceList"), getMethod([InlineInjectPlugin class], @selector(ret1)));
         switchMethod(getMethodStr(@"FCTraktTVDeviceList", @"containsCurrentDevice"), getMethod([InlineInjectPlugin class], @selector(ret1)));
-
     } else if (checkAppCFBundleVersion("7.5.4381")) {
         NSLog(@"Loading InFuse 4381");
         switchMethod(getMethodStr(@"FCInAppPurchaseServiceMobile", @"iapVersionStatus"), getMethod([InlineInjectPlugin class], @selector(ret1)));
@@ -888,6 +887,7 @@ void Office(void) {
 
 void AdobeApps(void) {
     if (checkSelfInject("com.adobe.Photoshop")) {
+//        rd_route_byname("adobe::nglcontroller::NglController::ProcessV2Profile", _dyld_get_image_name(0), ret1, NULL);
         //Adobe Photoshop 2023
         if (checkAppVersion("24.2.0")) {
             NSLog(@"Loading AdobeApps 24.2.0");
@@ -907,8 +907,9 @@ void AdobeApps(void) {
             hookPtrA(0x1041BA110, ret1);//这个函数是实际检查用户权限函数 nop掉就不提示窗口
 //        hookPtrA(0x10424E59C, ret1);//这个函数是检查账户权限线程
         } else if (checkAppVersion("24.5.0")) {
-            NSLog(@"Loading AdobeApps 24.5.0");
             hookPtrA(0x10420BE40, ret1);
+        } else if (checkAppVersion("24.6.0")) {
+            hookPtrA(0x10430a6b0, ret1);
         }
     }
 
@@ -918,6 +919,7 @@ void AdobeApps(void) {
             NSLog(@"Loading LightroomClassicCC7 12.3");
 //            hookPtrA(0x1001AE6C7, ret1);
             hookPtrA(0x100027638, ret1);
+//            hookPtrA(0x1001BA216, ret0);
         }
     }
 
@@ -1116,6 +1118,34 @@ void surge(void) {
             start = 0x1002affd9;
             active = 0x100188bd1;
             enterprise = 0x1001717a7;
+        } else if (checkAppCFBundleVersion("2250")) {
+            start = 0x1002b06de;
+            active = 0x100188e91;
+            enterprise = 0x100171a67;
+        } else if (checkAppCFBundleVersion("2251")) {
+            start = 0x1002b0962;
+            active = 0x100188fd1;
+            enterprise = 0x100171ba7;
+        } else if (checkAppCFBundleVersion("2252")) {
+            start = 0x1002b0a02;
+            active = 0x100189071;
+            enterprise = 0x100171c47;
+        } else if (checkAppCFBundleVersion("2253")) {
+            start = 0x1002b08c2;
+            active = 0x100188f31;
+            enterprise = 0x100171b07;
+        } else if (checkAppCFBundleVersion("2255")) {
+            start = 0x1002b09c2;
+            active = 0x100188f31;
+            enterprise = 0x100171b07;
+        } else if (checkAppCFBundleVersion("2259")) {
+            start = 0x1002b0a82;
+            active = 0x100188f41;
+            enterprise = 0x100171ac7;
+        } else if (checkAppCFBundleVersion("2261")) {
+            start = 0x1002b0ab2;
+            active = 0x100189001;
+            enterprise = 0x100171b87;
         }
         hookPtrA(start, (void *) getImageAddress(0x10057F162));//过掉反调试 直接把入口函数挂到 MainApplication
         // void __cdecl -[WindowController exec](WindowController *self, SEL a2)
@@ -1132,6 +1162,76 @@ void Reveal2(void) {
     if (checkAppCFBundleVersion("17801")) {
         intptr_t Security = getImageVMAddrSlideIndex("Security.framework/Versions/A/Security");
         hookPtrA(0x1006D10AB, ret1);//过掉反调试 Step1
+    }
+}
+
+- (void)updateLicenceUI2 {
+    NSLog(@"-====- updateLicenceUI %p", self);
+    id m_currentTab = getInstanceIvar(self, "m_currentTab");
+    NSLog(@"m_currentTab == %p", m_currentTab);
+
+    if (!m_currentTab) {
+        [getInstanceIvar(self, "accountNameLabel") performSelector:NSSelectorFromString(@"setStringValue:") withObject:@"秋城落叶@52pojie.cn"];
+        [getInstanceIvar(self, "affinityIdLabel") performSelector:NSSelectorFromString(@"setStringValue:") withObject:@"秋城落叶@52pojie.cn"];
+
+//        [getInstanceIvar(self, "exportPurchaseReceiptMenuItem") performSelector:NSSelectorFromString(@"setHidden:") withObject:@false];
+//        [getInstanceIvar(self, "deleteAccountMenuItem") performSelector:NSSelectorFromString(@"setHidden:") withObject:@false];
+//        [getInstanceIvar(self, "deleteAccountMenuItem") performSelector:NSSelectorFromString(@"setEnabled:") withObject:@true];
+//        [getInstanceIvar(self, "deactivateDeviceMenuItem") performSelector:NSSelectorFromString(@"setHidden:") withObject:@false];
+
+//        objc_msgSend(deleteAccountMenuItem, "setHidden:", v18 == 0);
+//        objc_msgSend(self->deactivateDeviceMenuItem, "setEnabled:", v39);
+//        objc_msgSend(self->exportPurchaseReceiptMenuItem, "setEnabled:", v12);
+//        v19 = self->deleteAccountMenuItem;
+//        objc_msgSend(v19, "setEnabled:", HasAccount);
+//        objc_msgSend(exportPurchaseReceiptMenuItem, "setHidden:", v16 == 0);
+        NSLog(@"m_currentTab Loading!");
+    }
+}
+
+void affinity2(void) {
+    if (checkSelfInject("com.seriflabs.affinityphoto2") || checkSelfInject("com.seriflabs.affinitydesigner2") || checkSelfInject("com.seriflabs.affinitypublisher2")) {
+        // 2.1 1806
+        if (checkAppVersion("2.1.0") && checkAppCFBundleVersion("1806")) {
+            uint32_t libcocoaui = getImageVMAddrSlideIndex("libcocoaui.framework/Versions/A/libcocoaui");
+            uint32_t liblibaffinity = getImageVMAddrSlideIndex("Frameworks/liblibaffinity.dylib");
+
+            hookPtr(liblibaffinity, 0x10758D0, ret1, NULL);// Affinity::IsLicensed(Affinity *this, const Affinity::LicenceInfo *a2)
+            hookPtr(liblibaffinity, 0x1075890, ret1, NULL);// Affinity::CanDeactivateLicence(Affinity *this, const Affinity::LicenceInfo *)
+            hookPtr(liblibaffinity, 0x1075D90, ret0, NULL);// Affinity::IsTrialRunning(Affinity *this, const Affinity::LicenceInfo *)
+
+            //libcocoaui 库中的函数
+            // char __cdecl -[Application hasEntitlementToRun](Application *self, SEL a2)
+            switchMethod(getMethodStr(@"Application", @"hasEntitlementToRun"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+            switchMethod(getMethodStr(@"UserStatusViewController", @"updateLicenceUI"), getMethod([InlineInjectPlugin class], @selector(updateLicenceUI2)));
+        }
+    }
+}
+
+- (NSString *)userInfo {
+    return @"QiuChenly 破解 永远不会";
+}
+
+- (void)update_subscription {
+    void (*update_subscription)(id, SEL) = (void *) org_update_subscription;
+    update_subscription(self, NSSelectorFromString(@"update_subscription"));
+    id ivar = getInstanceIvar(self, "m_subscription_label");
+    [ivar performSelector:NSSelectorFromString(@"setString:") withObject:@"QiuChenly@52pojie.cn 永不过期"];
+    [getInstanceIvar(self, "m_pay_btn") performSelector:NSSelectorFromString(@"setTitle:") withObject:@"无需续费"];
+}
+
+IMP org_update_subscription;
+
+void effie(void) {
+    if (checkSelfInject("co.effie.mac")) {
+        if (checkAppVersion("2.7.1")) {
+            switchMethod(getMethodStr(@"wm_UserMgr", @"subscriped"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+            switchMethod(getMethodStr(@"wm_UserMgr", @"subscription_info"), getMethod([InlineInjectPlugin class], @selector(userInfo)));
+            org_update_subscription = setMethod(getMethodStr(@"wm_SettingsSubscriptionViewController", @"update_subscription"), getMethodImplementation([InlineInjectPlugin class], @selector(update_subscription)));
+//            hookPtrA(0x1002565CE, ret1);
+//            hookPtrA(0x10007CF4D, ret1);
+//            switchMethod(getMethodStrByCls(@"wm_UserMgr", @"signed_in"), getMethod([InlineInjectPlugin class], @selector(ret1)));
+        }
     }
 }
 
@@ -1163,5 +1263,7 @@ void Reveal2(void) {
     AdobeApps();
     surge();
     Reveal2();
+    affinity2();
+    effie();
 }
 @end

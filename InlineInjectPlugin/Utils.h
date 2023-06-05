@@ -27,6 +27,8 @@ Method getMethodByCls(Class _Nullable cls, SEL _Nonnull name);
 
 Method getMethodStrByCls(NSString *cls, NSString *name);
 
+id getInstanceIvar(id self, const char *ivarName);
+
 uint32_t getImageVMAddrSlideIndex(char* ModuleName);
 
 IMP setMethod(Method m, IMP imp);
