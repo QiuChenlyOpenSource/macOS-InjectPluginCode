@@ -1114,10 +1114,13 @@ void surge(void) {
             start = 0x1002AFF59;
         } else if (checkAppCFBundleVersion("2239")) {
             start = 0x10057F162;
-        } else if (checkAppCFBundleVersion("2263")) {
+        } else if (checkAppCFBundleVersion("2264")) {
             start = 0x1002afc32;
             active = 0x100187ef1;
             enterprise = 0x100170a77;
+        } else{
+            //防止有些sb版本号不对非要去尝试注入 报错开始质疑我的能力 这种脑残我真的日死你的吗
+            return;
         }
         hookPtrA(start, (void *) getImageAddress(0x10057F162));//过掉反调试 直接把入口函数挂到 MainApplication
         // void __cdecl -[WindowController exec](WindowController *self, SEL a2)
