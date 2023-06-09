@@ -12,7 +12,7 @@
 
 #include "TargetConditionals.h"
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__arm64__)
 #if !(TARGET_IPHONE_SIMULATOR)
 
 #include <mach/mach_vm.h> // mach_vm_*
